@@ -1,12 +1,10 @@
 "use client"
-import { LoginSchema } from '@/lib/schemas/loginSchema';
 import clsx from 'clsx';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import React, { useActionState } from 'react'
-import { handleUsersLogin, signInUser } from '@/app/actions/authActions';
+import { handleUsersLogin } from '@/app/actions/authActions';
 import { FaGithub, FaGoogle } from 'react-icons/fa';
-export default  function page() {
+export default  function Page() {
     
     const [error, LoginAction, isPending] = useActionState(handleUsersLogin
         , null

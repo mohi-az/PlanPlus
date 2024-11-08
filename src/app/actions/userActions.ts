@@ -1,6 +1,5 @@
 "use server"
 import { auth } from "@/auth";
-import { TaskSchemaType } from "@/lib/schemas/taskSchema";
 import { prisma } from "@/prisma";
 import { Tasks } from "@prisma/client";
 

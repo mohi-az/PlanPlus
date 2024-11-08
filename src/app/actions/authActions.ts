@@ -32,7 +32,7 @@ export const signInUser = async (data: LoginSchemaType): Promise<ActionResult<st
     console.log("start....")
     try {
 
-        const result = await signIn('credentials', {
+        await signIn('credentials', {
             email: data.email,
             password: data.password,
             redirect: false

@@ -4,14 +4,13 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import React, { useActionState, useState } from 'react'
 import { registerSchema } from '@/lib/schemas/registerSchema'
-import { ImSpinner10 } from "react-icons/im";
 import clsx from 'clsx';
 
 type form = {
     name?: string,
     email?: string
 }
-export default function page() {
+export default function () {
     const [formValues, setFormValues] = useState<form>();
     const [error, submitLogin, isPending] = useActionState(
 
