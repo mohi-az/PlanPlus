@@ -13,9 +13,15 @@
 # testing
 /coverage
 
+/.vscode
+
 # next.js
 /.next/
 /out/
+
+#test
+/src/app/test*
+
 
 # production
 /build

@@ -4,6 +4,8 @@ const config: Config = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/lib/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/lib/skeletons/**/*.{js,ts,jsx,tsx,mdx}",
+
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
@@ -15,8 +17,23 @@ const config: Config = {
       }
       ,
       height: {
-        "remain": "calc(100vh - 60px)"
-      }
+        "remain": "calc(100vh - 11%)",
+        "120":"480px",
+        "130":"520px",
+        "Adivider": "calc(100vh - 25%)",
+      },
+      minHeight:{
+       "remain": "calc(100vh - 11%)",
+        "120":"480px",
+        "130":"520px",
+        "Adivider": "calc(100vh - 25%)",
+      },
+      maxHeight:{
+        "remain": "calc(100vh - 11%)",
+         "120":"480px",
+         "130":"520px",
+         "Adivider": "calc(100vh - 25%)",
+       }
     },
   },
   plugins: [daisyui],
