@@ -12,13 +12,9 @@ export default function UserTasks() {
     const [tasks, setTasks] = useState<Tasks[]>([]);
     const [isPending, startTransition] = useTransition();
     const GetTaskData = async () => {
-debugger
         const response = await GetUserTask();
-        if (response.status === "success") {
+        if (response.status === "success")
             setTasks(response.data);
-        }
-
-
     }
     useEffect(() => {
         startTransition(() => {
@@ -31,15 +27,13 @@ debugger
 
     };
     return (
-        <div className='w-full p-5 h-remain'>
+        <div className='w-full p-5 h-remain overflow-y-scroll'>
             <AddNewTask onTaskAdded={addTaskToList} />
-              <div className="divider"></div>
+            <div className="divider"></div>
 
-              <div className=" rounded-md p-3 bg-base-300 h-Adivider min-h-Adivider"  >
-              
-                    {isPending ? <TableSkeleton />
-                        : <UserTasksList tasks={tasks} />}
-                
+            <div className=" rounded-md p-3 bg-base-300 h-Adivider min-h-Adivider "  >
+                {isPending ? <TableSkeleton />
+                    : <UserTasksList tasks={tasks}  />}
             </div>
         </div>
     )

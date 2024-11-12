@@ -17,22 +17,22 @@ const config: Config = {
       }
       ,
       height: {
-        "remain": "calc(100vh - 11%)",
+        "remain": "calc(100vh - 10%)",
         "120":"480px",
         "130":"520px",
-        "Adivider": "calc(100vh - 25%)",
+        "Adivider": "calc(100vh - 23%)",
       },
       minHeight:{
-       "remain": "calc(100vh - 11%)",
+       "remain": "calc(100vh - 10%)",
         "120":"480px",
         "130":"520px",
-        "Adivider": "calc(100vh - 25%)",
+        "Adivider": "calc(100vh - 23%)",
       },
       maxHeight:{
-        "remain": "calc(100vh - 11%)",
+        "remain": "calc(100vh - 10%)",
          "120":"480px",
          "130":"520px",
-         "Adivider": "calc(100vh - 25%)",
+         "Adivider": "calc(100vh - 23%)",
        }
     },
   },

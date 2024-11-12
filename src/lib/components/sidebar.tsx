@@ -4,7 +4,7 @@ import { RiMenuFold4Fill } from 'react-icons/ri'
 
 export default function Sidebar() {
     return (
-        <div className="drawer lg:drawer-open h-remain">
+        <div className="drawer lg:drawer-open h-remain  flex">
             <input id="PlanPluseSlider" type="checkbox" className="drawer-toggle" />
             <div className="drawer-content flex flex-col items-center justify-center">
 
@@ -13,9 +13,9 @@ export default function Sidebar() {
                 </label>
             </div>
 
-            <div className="drawer-side h-remain">
+            <div className="drawer-side h-remain ">
                 <label htmlFor="PlanPluseSlider" aria-label="close sidebar" className="drawer-overlay"></label>
-                <ul className="menu bg-base-200 text-base-content min-h-full w-80 p-4 text-sm md:text-base lg:text-lg">
+                <ul className="menu bg-base-200  text-base-content min-h-full w-80 p-4 text-sm md:text-base lg:text-lg">
 
                     <li><Link href={"/members"}>Dashboard</Link></li>
                     <li><Link href={"/members/tasks"}>My Tasks</Link></li>

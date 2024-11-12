@@ -15,10 +15,10 @@ export default function UserTasksList({ tasks }: { tasks: Tasks[] }) {
                     <thead>
                         <tr>
                             <th></th>
-                            <th>Task title</th>
-                            <th>Description</th>
-                            <th>Due Date</th>
-                            <th>status</th>
+                            <th className='lg:font-semibold text-sm lg:text-lg'>Task title</th>
+                            <th className='lg:font-semibold text-sm lg:text-lg'>Description</th>
+                            <th className='lg:font-semibold text-sm lg:text-lg'>Due date</th>
+                            <th className='lg:font-semibold text-sm lg:text-lg'>Status</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -37,7 +37,7 @@ export default function UserTasksList({ tasks }: { tasks: Tasks[] }) {
                                                     '/images/todo.gif' : '/images/cancel2.gif'}
                                         /></td>
                                     <th>
-                                        <button className="btn btn-ghost btn-xs">details</button>
+                                        <button className="btn btn-ghost btn-sm md:btn-md">View more</button>
                                     </th>
                                 </tr>
                             )

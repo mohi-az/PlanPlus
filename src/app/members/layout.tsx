@@ -13,10 +13,10 @@ export default async function layout({ children }: { children: React.ReactNode }
                 {session && <Navbar session={session} />}
             </div>
             <div className='flex flex-row' >
-                <div className=' w-1/6'>
+                <div className=''>
                     <Sidebar />
                 </div>
-                <div className=' w-5/6'>
+                <div className='w-full'>
                     {children}
                 </div>
             </div>
