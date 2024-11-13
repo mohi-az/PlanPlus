@@ -1,18 +1,16 @@
 "use client"
-import { AddTask } from '@/app/actions/userActions';
+import { TasksContext } from '@/contexts/tasksContext';
 import ModalForm from '@/lib/components/modalForm'
 import { TaskSchema } from '@/lib/schemas/taskSchema';
-import { Tasks } from '@prisma/client';
-import clsx from 'clsx';
 import Image from 'next/image';
-import React, { useActionState, useState } from 'react'
+import React, { useActionState, useContext, useState } from 'react'
 
-export default function AddNewTask({ onTaskAdded }: { onTaskAdded: (newTask: Tasks) => void }) {
+export default function AddNewTask() {
+    const { addTask } = useContext(TasksContext);
     const [showingModal, setShowingModal] = useState(false);
     const [status, addNewTask, isPending] = useActionState(
         async (preState: any, formData: FormData) => {
             const dueDate = formData.get('dueDate')?.toString();
-
             const reminderDate = formData.get('reminderDate');
             const reminderTime = formData.get('reminderTime');
             var reminder = null;
@@ -27,12 +25,11 @@ export default function AddNewTask({ onTaskAdded }: { onTaskAdded: (newTask: Tas
 
             if (!validatedData.success)
                 return validatedData.error.issues;
-            const response = await AddTask(validatedData.data);
-            if (response.status === "error")
-                return response.error
-            onTaskAdded(response.data)
-            setShowingModal(false);
+            const response = await addTask(validatedData.data);
 
+            if (response && response.status === "error")
+                return response.error
+            setShowingModal(false);
 
         }, null
     )

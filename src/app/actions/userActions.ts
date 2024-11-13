@@ -1,14 +1,13 @@
 "use server"
 import { auth } from "@/auth";
-import { TaskSchemaType } from "@/lib/schemas/taskSchema";
 import { prisma } from "@/prisma";
 import { Tasks } from "@prisma/client";
 
-export const AddTask = async ({ title, description, dueDate,reminderDateTime }: { title: string, description: string, dueDate: Date,reminderDateTime:string | null }): Promise<ActionResult<Tasks>> => {
+export const AddTask = async ({ title, description, dueDate, reminderDateTime }: { title: string, description: string, dueDate: Date, reminderDateTime: string | null }): Promise<ActionResult<Tasks>> => {
     try {
         console.log("Adding the Task....")
         const Session = await auth();
-        const reminder = reminderDateTime ? { create: { remindAt: new Date(reminderDateTime), isSent:false}} : {}
+        const reminder = reminderDateTime ? { create: { remindAt: new Date(reminderDateTime), isSent: false } } : {}
 
         if (Session?.user?.id) {
             const response = await prisma.tasks.create({
@@ -53,4 +52,24 @@ export const GetUserTask = async (): Promise<ActionResult<Tasks[]>> => {
         else return { status: "error", error: "There isn't any row to show" }
     }
     return { status: "error", error: "Somthing went wrong in read the tasks" }
+}
+export const DeleteTask = async (taskId: string): Promise<ActionResult<null>> => {
+    try {
+
+        const Session = await auth();
+        if (Session?.user) {
+            const response = await prisma.tasks.delete({
+                where: {
+                    id: taskId,
+                }
+            })
+            return { status: "success", data: null }
+        }
+        else {
+            return { status: "error", error: "You aren't allow to delete this task !" }
+        }
+    }
+    catch (error) {
+        return { status: "error", error: "Something wents wrong!" }
+    }
 }

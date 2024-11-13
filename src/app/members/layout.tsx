@@ -1,6 +1,6 @@
 
-
 import { auth } from '@/auth';
+import { TasksProvider } from '@/contexts/tasksContext';
 import Navbar from '@/lib/components/navbar'
 import Sidebar from '@/lib/components/sidebar'
 import React from 'react'
@@ -17,7 +17,9 @@ export default async function layout({ children }: { children: React.ReactNode }
                     <Sidebar />
                 </div>
                 <div className='w-full'>
-                    {children}
+                    <TasksProvider>
+                        {children}
+                    </TasksProvider>
                 </div>
             </div>
         </div>

@@ -107,7 +107,7 @@ model Reminders {
   id       String   @id @default(cuid())
   remindAt DateTime
   isSent   Boolean
-  task     Tasks    @relation(fields: [taskId], references: [id])
+  task     Tasks    @relation(fields: [taskId], references: [id],onDelete: Cascade)
   taskId   String   @unique
 }
 
