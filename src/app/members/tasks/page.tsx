@@ -31,7 +31,7 @@ export default function UserTasks() {
             <AddNewTask onTaskAdded={addTaskToList} />
             <div className="divider"></div>
 
-            <div className=" rounded-md p-3 bg-base-300 h-Adivider min-h-Adivider "  >
+            <div className=" rounded-md p-3 bg-base-300  min-h-Adivider "  >
                 {isPending ? <TableSkeleton />
                     : <UserTasksList tasks={tasks}  />}
             </div>

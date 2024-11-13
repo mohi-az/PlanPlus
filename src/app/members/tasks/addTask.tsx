@@ -4,6 +4,7 @@ import ModalForm from '@/lib/components/modalForm'
 import { TaskSchema } from '@/lib/schemas/taskSchema';
 import { Tasks } from '@prisma/client';
 import clsx from 'clsx';
+import Image from 'next/image';
 import React, { useActionState, useState } from 'react'
 
 export default function AddNewTask({ onTaskAdded }: { onTaskAdded: (newTask: Tasks) => void }) {
@@ -11,10 +12,17 @@ export default function AddNewTask({ onTaskAdded }: { onTaskAdded: (newTask: Tas
     const [status, addNewTask, isPending] = useActionState(
         async (preState: any, formData: FormData) => {
             const dueDate = formData.get('dueDate')?.toString();
+
+            const reminderDate = formData.get('reminderDate');
+            const reminderTime = formData.get('reminderTime');
+            var reminder = null;
+            if (reminderDate && reminderTime)
+                reminder = new Date(reminderDate?.toString() + 'T' + reminderTime?.toString());
             const validatedData = TaskSchema.safeParse({
                 title: formData.get('title'),
                 description: formData.get('description'),
-                dueDate: dueDate ? new Date(dueDate) : null
+                dueDate: dueDate ? new Date(dueDate) : null,
+                reminderDateTime: reminder ? new Date(reminder).toISOString() : null
             });
 
             if (!validatedData.success)
@@ -58,16 +66,27 @@ export default function AddNewTask({ onTaskAdded }: { onTaskAdded: (newTask: Tas
                                 Set a reminder
                             </div>
                             <div
-                                className="collapse-content bg-pink-300 text-primary-content peer-checked:bg-primary peer-checked:text-secondary-content">
-                                <input type='datetime-local' className="input text-white input-bordered w-full input-sm md:input-md"
-                                    aria-label="Task due date" />  
+                                className="collapse-content bg-pink-300 text-primary-content peer-checked:bg-primary 
+                                peer-checked:text-secondary-content
+                                flex flex-row justify-items-end">
+                                <div className='w-2/3 flex flex-row gap-1 justify-center items-end'>
+
+                                    <input type='date' name='reminderDate' className="input text-white input-bordered w-full input-sm md:input-md"
+                                        aria-label="Task due date" />
+                                    <input type='time' name='reminderTime' className="input text-white input-bordered w-full input-sm md:input-md"
+                                        aria-label="Task due date" value={"08:00"} />
+                                </div>
+                                <div className='w-1/3 justify-items-center align-top'>
+
+                                    <Image src={"/images/reminder.gif"} width={150} height={80} alt='Reminder' />
+                                </div>
                             </div>
                         </div>
                         <div className='pt-5 w-full flex flex-row gap-4'>
-                            <button type='submit' className="btn btn-primary  w-1/2 flex flex-row" disabled={isPending}>
+                            <button type='submit' className="btn btn-success  w-1/2 flex flex-row" disabled={isPending}>
                                 {isPending && <span className={"loading loading-spinner"}></span>}
                                 Add Task</button>
-                            <button type='reset' className=' btn btn-secondary w-1/2' onClick={() => setShowingModal(false)}>Close</button>
+                            <button type='reset' className=' btn btn-neutral w-1/2' onClick={() => setShowingModal(false)}>Close</button>
                         </div>
                         <div className='text-sm md:text-base  flex flex-col pt-5'>
 

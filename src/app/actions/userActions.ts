@@ -4,11 +4,12 @@ import { TaskSchemaType } from "@/lib/schemas/taskSchema";
 import { prisma } from "@/prisma";
 import { Tasks } from "@prisma/client";
 
-export const AddTask = async ({ title, description, dueDate }: { title: string, description: string, dueDate: Date }): Promise<ActionResult<Tasks>> => {
+export const AddTask = async ({ title, description, dueDate,reminderDateTime }: { title: string, description: string, dueDate: Date,reminderDateTime:string | null }): Promise<ActionResult<Tasks>> => {
     try {
         console.log("Adding the Task....")
         const Session = await auth();
-        console.log(Session?.user)
+        const reminder = reminderDateTime ? { create: { remindAt: new Date(reminderDateTime), isSent:false}} : {}
+
         if (Session?.user?.id) {
             const response = await prisma.tasks.create({
                 data: {
@@ -17,7 +18,8 @@ export const AddTask = async ({ title, description, dueDate }: { title: string, 
                     dueDate: dueDate ? dueDate : null,
                     status: "Todo",
                     createdAt: new Date(Date.now()),
-                    userId: Session.user.id
+                    userId: Session.user.id,
+                    reminder
                 }
             })
 
