@@ -15,7 +15,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  passwordHash  String?            
+  passwordHash  String?
   Authenticator Authenticator[]
   tasks         Tasks[]
   categories    Categories[]
@@ -87,11 +87,13 @@ model Tasks {
   dueDate     DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime?
+  completeAt  DateTime?
   caregory    Categories[]
   user        User         @relation(fields: [userId], references: [id])
   userId      String
   priority    String?
   reminder    Reminders?
+  note        TaskNote?
 }
 
 model Categories {
@@ -107,7 +109,7 @@ model Reminders {
   id       String   @id @default(cuid())
   remindAt DateTime
   isSent   Boolean
-  task     Tasks    @relation(fields: [taskId], references: [id],onDelete: Cascade)
+  task     Tasks    @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId   String   @unique
 }
 
@@ -126,4 +128,12 @@ model UserAchievements {
   achievementId String
   user          User         @relation(fields: [userId], references: [id])
   achievement   Achievements @relation(fields: [achievementId], references: [id])
+}
+
+model TaskNote {
+  id          String  @id @default(cuid())
+  note        String
+  isFavourite Boolean @default(false)
+  taskId      String  @unique
+  task        Tasks   @relation(fields: [taskId], references: [id], onDelete: Cascade)
 }

@@ -18,6 +18,7 @@ export default async function layout({ children }: { children: React.ReactNode }
                 </div>
                 <div className='w-full'>
                     <TasksProvider>
+                        
                         {children}
                     </TasksProvider>
                 </div>

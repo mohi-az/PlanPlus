@@ -21,18 +21,23 @@ const config: Config = {
         "120":"480px",
         "130":"520px",
         "Adivider": "calc(100vh - 23%)",
+        "AdividerWithoutBTN": "calc(100vh - 12%)",
+
       },
       minHeight:{
        "remain": "calc(100vh - 10%)",
         "120":"480px",
         "130":"520px",
         "Adivider": "calc(100vh - 23%)",
+        "AdividerWithoutBTN": "calc(100vh - 12%)",
+
       },
       maxHeight:{
         "remain": "calc(100vh - 10%)",
          "120":"480px",
          "130":"520px",
          "Adivider": "calc(100vh - 23%)",
+         "AdividerWithoutBTN": "calc(100vh - 12%)",
        }
     },
   },

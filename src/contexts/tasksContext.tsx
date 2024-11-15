@@ -1,18 +1,24 @@
 "use client"
-import { AddTask, DeleteTask, GetUserTask } from "@/app/actions/userActions";
+import { AddTask, ChangeTaskStatus, DeleteTask, GetUserTask } from "@/app/actions/userActions";
 import { TaskSchemaType } from "@/lib/schemas/taskSchema";
 import { Tasks } from "@prisma/client";
 import React, { createContext, useEffect, useState, useTransition } from "react";
-import { ZodIssue } from "zod";
+import { string, ZodIssue } from "zod";
 
 type TasksContextType = {
     tasks: Tasks[],
     isPending: boolean
-    addTask: (task: TaskSchemaType) => Promise<ActionResult<Tasks>> | void,
-    deleteTask: (taskId: string) => Promise<string | ZodIssue[]> | void
+    addTask: (task: TaskSchemaType) => Promise<ActionResult<Tasks>>,
+    deleteTask: (taskId: string) => Promise<string | ZodIssue[]>,
+    doneTask: (taskId: string, note?: string) => Promise<ActionResult<Tasks>>
 }
 
-const defaultContext: TasksContextType = { tasks: [], isPending: false, deleteTask: () => { }, addTask: () => { } };
+const defaultContext: TasksContextType = {
+    tasks: [], isPending: false,
+    deleteTask: async () => (''),
+    addTask: async () => ({ status: "error", error: '' }),
+    doneTask: async () => ({ status: "error", error: '' })
+}
 export const TasksContext = createContext<TasksContextType>(defaultContext);
 
 export const TasksProvider = ({ children }: { children: React.ReactNode }) => {
@@ -48,8 +54,13 @@ export const TasksProvider = ({ children }: { children: React.ReactNode }) => {
         }
         return response
     }
+    const doneTask = async (taskId: string, note?: string): Promise<ActionResult<Tasks>> => {
+        const response = await ChangeTaskStatus(taskId, "Done", note)
+        if (response.status === "success") GetTasks();
+        return response
+    }
     return (
-        <TasksContext.Provider value={{ tasks, isPending, deleteTask, addTask }}>
+        <TasksContext.Provider value={{ tasks, isPending, deleteTask, addTask, doneTask }}>
             {children}
         </TasksContext.Provider>
 

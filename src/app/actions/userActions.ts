@@ -1,7 +1,7 @@
 "use server"
 import { auth } from "@/auth";
 import { prisma } from "@/prisma";
-import { Tasks } from "@prisma/client";
+import { TaskNote, Tasks } from "@prisma/client";
 
 export const AddTask = async ({ title, description, dueDate, reminderDateTime }: { title: string, description: string, dueDate: Date, reminderDateTime: string | null }): Promise<ActionResult<Tasks>> => {
     try {
@@ -66,10 +66,100 @@ export const DeleteTask = async (taskId: string): Promise<ActionResult<null>> =>
             return { status: "success", data: null }
         }
         else {
-            return { status: "error", error: "You aren't allow to delete this task !" }
+            return { status: "error", error: "You are not allowed to change this task!" }
         }
     }
     catch (error) {
-        return { status: "error", error: "Something wents wrong!" }
+        return { status: "error", error: "Something went wrong!" }
     }
+}
+export const ChangeTaskStatus = async (taskId: string, status: string, note?: string): Promise<ActionResult<Tasks>> => {
+    try {
+
+
+        const Session = await auth();
+        if (Session?.user) {
+            const createNote = note ? { create: { note: note } } : {}
+            const response = await prisma.tasks.update({
+
+                where: { id: taskId },
+                data:
+                {
+                    status: status,
+                    completeAt: status === "Done" ? new Date(Date.now()) : null,
+                    note: createNote
+                }
+            })
+            return { status: "success", data: response }
+
+        }
+        else {
+            return { status: "error", error: "You are not allowed to change this task!" }
+        }
+    }
+    catch (error) {
+        console.log(error)
+        return { status: "error", error: "Something went wrong" }
+    }
+
+}
+
+
+export const GetUserNotes = async (): Promise<ActionResult<noteType[]>> => {
+
+    const Session = await auth();
+    if (Session?.user) {
+        const response = await prisma.taskNote.findMany({
+            where: {
+                task: {
+                    userId: Session.user.id
+                }
+            },
+            select: {
+                note: true,
+                id: true,
+                isFavourite: true,
+                task: {
+                    select: {
+                        id: true,
+                        title: true,
+                        description: true,
+                        status: true,
+                        completeAt: true
+                    }
+                }
+            }
+        })
+
+        if (response.length > 0)
+            return { status: "success", data: response }
+        else return { status: "error", error: "Something went wrong!" }
+    }
+    else
+        return { status: "error", error: "You are not allowed to see this note!" }
+
+}
+
+export const ChangeFavNote = async (noteId: string): Promise<ActionResult<boolean>> => {
+
+    const Session = await auth();
+    if (Session?.user) {
+        const currentTaskNote = await prisma.taskNote.findUnique({ where: { id: noteId }, select: { isFavourite: true } })
+        const response = await prisma.taskNote.update({
+            where: {
+                id: noteId
+            },
+            data: {
+                isFavourite: {
+                    set: !currentTaskNote?.isFavourite
+                }
+            }
+        }
+        )
+        return { status: "success", data: true }
+    }
+    else {
+        return { status: "error", error: "You are not allowed to see this note!" }
+    }
+
 }
