@@ -20,7 +20,7 @@ export default function CompleteTask({ taskId, visible, changeVisibility }: { ta
     return (
         <div>
             <ModalForm title='Mark as Done' isVisible={visible}>
-                <form method="dialog" className='w-full' action={changeStatus} >
+                <form className='w-full' action={changeStatus} >
                     <div >
                         <div className="label">
                             <span className="label-text font-bold">Note</span>
@@ -34,8 +34,7 @@ export default function CompleteTask({ taskId, visible, changeVisibility }: { ta
                             <button type='reset' className=' btn btn-neutral w-1/2' onClick={() => changeVisibility()}>Close</button>
                         </div>
                         <div className='text-sm md:text-base  flex flex-col pt-5'>
-                            {status.toString()
-                            }
+                            { state && status.toString()}
                         </div>
                     </div>
                 </form>

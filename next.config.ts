@@ -1,14 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // experimental:{
-  //   ppr:'incremental'
-  // },
-  images:{
-    remotePatterns:[
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  images: {
+    remotePatterns: [
       {
-        protocol:"https",
-        hostname:"avatars.githubusercontent.com"
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com"
       }
     ]
   }

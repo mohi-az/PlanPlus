@@ -37,7 +37,7 @@ export default function AddNewTask() {
         <div> <div className='w-full '>
             <button className=' btn btn-primary ' onClick={() => setShowingModal(true)}>Add new task</button>
             <ModalForm title='Add New Task' isVisible={showingModal}>
-                <form method="dialog" className='w-full' action={addNewTask}>
+                <form  className='w-full' action={addNewTask}>
                     <div >
                         <div className="label">
                             <span className="label-text font-bold">Title</span>
@@ -71,11 +71,11 @@ export default function AddNewTask() {
                                     <input type='date' name='reminderDate' className="input text-white input-bordered w-full input-sm md:input-md"
                                         aria-label="Task due date" />
                                     <input type='time' name='reminderTime' className="input text-white input-bordered w-full input-sm md:input-md"
-                                        aria-label="Task due date" value={"08:00"} />
+                                        aria-label="Task due date" defaultValue={"08:00"} />
                                 </div>
                                 <div className='w-1/3 justify-items-center align-top'>
 
-                                    <Image src={"/images/reminder.gif"} width={150} height={80} alt='Reminder' />
+                                    <img  src={"/images/reminder.gif"} width={150} height={80} alt='Reminder' />
                                 </div>
                             </div>
                         </div>

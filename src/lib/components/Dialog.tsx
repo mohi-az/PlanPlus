@@ -8,7 +8,7 @@ export const Dialog = ({ description, changeVisibility, confirmAction,Visibility
                 <h3 className="font-bold text-lg">Confirmation</h3>
                 <p className="py-4">{description ? description : 'Are you sure want you delete the task?'}</p>
                 <div className="modal-action">
-                    <form method="dialog" className="flex flex-row gap-4">
+                    <form  className="flex flex-row gap-4">
                         <button className="btn btn-sm md:px-8 md:btn-md btn-accent" onClick={confirmAction}>{ActionTitle}</button>
                         <button className="btn btn-sm md:px-8 md:btn-md" onClick={changeVisibility}>Cancel</button>
                     </form>

@@ -137,3 +137,11 @@ model TaskNote {
   taskId      String  @unique
   task        Tasks   @relation(fields: [taskId], references: [id], onDelete: Cascade)
 }
+
+model Logs {
+  id     String @id @default(cuid())
+  type   String
+  url    String?
+  detail String
+  dateTime DateTime @default(now())
+}

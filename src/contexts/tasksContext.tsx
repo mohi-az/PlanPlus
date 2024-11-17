@@ -3,7 +3,7 @@ import { AddTask, ChangeTaskStatus, DeleteTask, GetUserTask } from "@/app/action
 import { TaskSchemaType } from "@/lib/schemas/taskSchema";
 import { Tasks } from "@prisma/client";
 import React, { createContext, useEffect, useState, useTransition } from "react";
-import { string, ZodIssue } from "zod";
+import {  ZodIssue } from "zod";
 
 type TasksContextType = {
     tasks: Tasks[],

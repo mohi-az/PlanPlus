@@ -4,7 +4,7 @@ import { Dialog } from '@/lib/components/Dialog';
 import { Tasks } from '@prisma/client';
 import clsx from 'clsx';
 import Image from 'next/image';
-import React, { useContext, useState, useTransition } from 'react'
+import React, { useCallback, useContext, useState, useTransition } from 'react'
 import CompleteTask from './completeTask';
 
 export default function UserTasksList({ userTask }: { userTask: Tasks[] }) {
@@ -16,25 +16,23 @@ export default function UserTasksList({ userTask }: { userTask: Tasks[] }) {
     const [donebtnActive, setDonebtnActive] = useState<string | null>(null);
     const [selectedTask, setSelectedTask] = useState<string>('');
     const [isPending, startTransition] = useTransition();
-    const context = useContext(TasksContext)
-    const { deleteTask } = context;
-    const DeleteHandler = () => {
+    const { deleteTask } = useContext(TasksContext)
+    const DeleteHandler = useCallback(() => {
         if (selectedTask)
             startTransition(async () => {
-                const response = await deleteTask(selectedTask);
+                await deleteTask(selectedTask);
                 setSelectedTask('')
                 return
             }
             )
-    }
+    }, [selectedTask])
     const changeVisibility = () => SetDialogVisible(prev => !prev)
     const changeFormVisibility = () => setDoneFormVisible(prev => !prev)
 
     return (
         <div className="overflow-x-auto ">
-            {userTask.length > 0 &&
+            {userTask.length > 0 && (
                 <table className="table ">
-                    {/* head */}
                     <thead>
                         <tr>
                             <th></th>
@@ -50,8 +48,8 @@ export default function UserTasksList({ userTask }: { userTask: Tasks[] }) {
                             userTask.map(task =>
                                 <tr key={task.id} className='w-full hover h-6 overflow-y-scroll'>
                                     <td>{RowNo++}</td>
-                                    <td className={clsx(task.status!="Done" && 'font-bold')}>{task.title}</td>
-                                    <td className={clsx(task.status!="Done" && 'font-bold')}> {task.description}</td>
+                                    <td className={clsx(task.status != "Done" && 'font-bold')}>{task.title}</td>
+                                    <td className={clsx(task.status != "Done" && 'font-bold')}> {task.description}</td>
                                     <td> {task.dueDate ? new Date(task.dueDate).toDateString() : ''}</td>
                                     <td >
                                         <img className={clsx('w-7 md:w-14 m-auto', task.status === "Cancel" && 'w-5 md:w-10')}
@@ -76,7 +74,8 @@ export default function UserTasksList({ userTask }: { userTask: Tasks[] }) {
                                                     }
                                                     className="btn btn-square btn-ghost ">
 
-                                                    <Image key={task.id + "DELETE"}
+                                                    <Image unoptimized={true}
+                                                        key={task.id + "DELETE"}
                                                         src={deletebtnActive === task.id ? '/images/delete.gif' : '/images/delete.png'}
                                                         width={35} height={45} alt='Delete IMG' />
                                                 </button>
@@ -96,7 +95,7 @@ export default function UserTasksList({ userTask }: { userTask: Tasks[] }) {
                                                         }
                                                         className="btn btn-square btn-ghost " >
 
-                                                        <Image key={task.id + "Done"}
+                                                        <Image unoptimized={true} key={task.id + "Done"}
                                                             src={donebtnActive === task.id ? '/images/donebtn.gif' : '/images/donebtn.png'}
                                                             width={55} height={45} alt='Done IMG' />
                                                     </button>
@@ -109,9 +108,10 @@ export default function UserTasksList({ userTask }: { userTask: Tasks[] }) {
                         }
                     </tbody>
                 </table>
+            )
             }
             <CompleteTask taskId={selectedTask} visible={doneFormVisible} changeVisibility={changeFormVisibility} />
-            <Dialog confirmAction={() => DeleteHandler()} Visibility={dialogVisible} changeVisibility={changeVisibility} ActionTitle='Delete' />
+            <Dialog confirmAction={DeleteHandler} Visibility={dialogVisible} changeVisibility={changeVisibility} ActionTitle='Delete' />
         </div>
     )
 }

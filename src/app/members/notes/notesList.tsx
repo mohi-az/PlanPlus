@@ -1,7 +1,7 @@
 "use client"
 import { NotesContext } from '@/contexts/notesContext';
 import Image from 'next/image';
-import React, { useContext, useState, useTransition } from 'react'
+import React, { useCallback, useContext, useState, useTransition } from 'react'
 
 export default function NotesList() {
     let RowNo = 1;
@@ -10,13 +10,13 @@ export default function NotesList() {
     const [selectedNote, setSelectedNote] = useState("");
     const [favBTNActive, setFavBTNActive] = useState<string | null>(null);
 
-    const ChangeFavFlag = (noteId: string) => {
+    const ChangeFavFlag = useCallback((noteId: string) => {
         startTransition(async () => {
             await ChangeFav(noteId)
             setSelectedNote('')
             return
         })
-    }
+    }, [ChangeFav])
     return (
         <div className="overflow-x-auto ">
             <table className="table ">
@@ -45,7 +45,7 @@ export default function NotesList() {
                                         {isPending && selectedNote === note.id ?
                                             <div className='loading  loading-spinner text-info'></div>
                                             :
-                                            <Image src={
+                                            <Image unoptimized={true} src={
                                                 note.isFavourite ?
                                                     "/images/favNote.png" :
                                                     selectedNote === note.id ? "/images/favNote.gif" : "/images/favNoteGray.png"
@@ -57,11 +57,11 @@ export default function NotesList() {
                                                     setSelectedNote(note.id)
                                                 }}
                                                 onMouseOver={() => {
-                                                
+
                                                     setFavBTNActive(note.id)
                                                 }}
                                                 onMouseLeave={() => {
-                                                  
+
                                                     setFavBTNActive('')
                                                 }}
                                             />

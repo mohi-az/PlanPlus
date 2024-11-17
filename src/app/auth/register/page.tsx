@@ -10,7 +10,7 @@ type form = {
     name?: string,
     email?: string
 }
-export default function () {
+export default function Register() {
     const [formValues, setFormValues] = useState<form>();
     const [error, submitLogin, isPending] = useActionState(
 
