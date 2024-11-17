@@ -48,7 +48,7 @@ export default function NotesList() {
                                             <Image unoptimized={true} src={
                                                 note.isFavourite ?
                                                     "/images/favNote.png" :
-                                                    selectedNote === note.id ? "/images/favNote.gif" : "/images/favNoteGray.png"
+                                                    favBTNActive === note.id ? "/images/favNote.gif" : "/images/favNoteGray.png"
                                             }
                                                 width={30} height={35} alt='Favourite Icon'
                                                 className='cursor-pointer'
