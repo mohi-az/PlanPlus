@@ -1,9 +1,9 @@
 import React from 'react'
-export default async function Page({ children }:{ children: React.ReactNode }) {
+export default async function Page() {
 
     return (
         <div>
-                {children}
+           Dashboard coming soon
         </div>
     )
 }
