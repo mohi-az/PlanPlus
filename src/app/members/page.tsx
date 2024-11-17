@@ -1,10 +1,9 @@
-
 import React from 'react'
-export default async function Page({ Children }: { Children: React.ReactNode }) {
+export default async function Page({ children }:{ children: React.ReactNode }) {
 
     return (
         <div>
-                {Children}
+                {children}
         </div>
     )
 }
