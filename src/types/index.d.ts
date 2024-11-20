@@ -12,3 +12,15 @@ type noteType = {
         completeAt: Date | null;
     };
 }
+type userTasks = {
+    id: string;
+    title: string;
+    description: string | null;
+    status: string;
+    dueDate: Date | null;
+    createdAt: Date;
+    userId: string;
+    reminder: {
+        remindAt: Date;
+    } | null;
+}

@@ -14,6 +14,7 @@ export default function NotesList() {
         startTransition(async () => {
             await ChangeFav(noteId)
             setSelectedNote('')
+            setFavBTNActive(null)
             return
         })
     }, [ChangeFav])

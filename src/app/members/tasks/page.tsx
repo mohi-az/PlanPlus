@@ -7,7 +7,6 @@ import { TasksContext } from '@/contexts/tasksContext';
 
 export default function UserTasks() {
     const { tasks,isPending } = useContext(TasksContext);
-
     return (
         <div className='w-full p-5 h-remain overflow-y-scroll'>
             <AddNewTask />

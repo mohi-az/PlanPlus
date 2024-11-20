@@ -1,7 +1,7 @@
 "use server"
 import { auth } from "@/auth";
 import { prisma } from "@/prisma";
-import { TaskNote, Tasks } from "@prisma/client";
+import { Tasks } from "@prisma/client";
 
 export const AddTask = async ({ title, description, dueDate, reminderDateTime }: { title: string, description: string, dueDate: Date, reminderDateTime: string | null }): Promise<ActionResult<Tasks>> => {
     try {
@@ -34,8 +34,54 @@ export const AddTask = async ({ title, description, dueDate, reminderDateTime }:
     }
 
 }
+export const UpdateTask = async ({ taskId, title, description, dueDate, reminderDateTime }: { taskId: string, title: string, description: string, dueDate: Date, reminderDateTime: string | null }): Promise<ActionResult<Tasks>> => {
+    try {
+        const Session = await auth();
+        const reminer = await prisma.reminders.findUnique({ where: { taskId: taskId } })
+        const reminder = (reminer && reminderDateTime) ? { update: { remindAt: new Date(reminderDateTime), isSent: false } } : {}
 
-export const GetUserTask = async (): Promise<ActionResult<Tasks[]>> => {
+        if (Session?.user?.id) {
+            const response = await prisma.tasks.update({
+                where: {
+                    id: taskId,
+                },
+                data: {
+                    title: title,
+                    description: description,
+                    dueDate: dueDate ? dueDate : null,
+                    status: "Todo",
+                    createdAt: new Date(Date.now()),
+                    userId: Session.user.id,
+                    reminder
+                }
+            })
+            if (reminderDateTime && reminer === null) {
+                 await prisma.reminders.create({
+                    data: {
+                        remindAt: new Date(reminderDateTime),
+                        isSent: false,
+                        taskId: response.id
+                    }
+
+                })
+            }
+            else if (reminderDateTime === null && reminer) await prisma.reminders.delete({ where: { taskId: taskId } });
+
+
+            return { status: "success", data: response }
+        }
+        else
+            return { status: "error", error: "Somthing went wrong! Please try again." }
+
+    }
+    catch (error) {
+        console.log(error);
+        return { status: "error", error: "Somthing went wrongffff!" }
+    }
+
+}
+
+export const GetUserTask = async (): Promise<ActionResult<userTasks[]>> => {
 
     const Session = await auth();
     if (Session?.user) {
@@ -45,6 +91,21 @@ export const GetUserTask = async (): Promise<ActionResult<Tasks[]>> => {
             }
             , orderBy: {
                 id: "desc"
+            }
+            , select: {
+                id: true,
+                createdAt: true,
+                description: true,
+                title: true,
+                dueDate: true,
+                status: true, userId: true,
+                reminder: {
+                    select:
+                    {
+                        remindAt: true,
+                        id: true
+                    }
+                }
             }
         })
         if (userTasks)
@@ -58,7 +119,7 @@ export const DeleteTask = async (taskId: string): Promise<ActionResult<null>> =>
 
         const Session = await auth();
         if (Session?.user) {
-            const response = await prisma.tasks.delete({
+            await prisma.tasks.delete({
                 where: {
                     id: taskId,
                 }
@@ -145,7 +206,7 @@ export const ChangeFavNote = async (noteId: string): Promise<ActionResult<boolea
     const Session = await auth();
     if (Session?.user) {
         const currentTaskNote = await prisma.taskNote.findUnique({ where: { id: noteId }, select: { isFavourite: true } })
-        const response = await prisma.taskNote.update({
+        await prisma.taskNote.update({
             where: {
                 id: noteId
             },
