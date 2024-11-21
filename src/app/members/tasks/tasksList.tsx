@@ -31,7 +31,7 @@ export default function UserTasksList({ userTask }: { userTask: userTasks[] }) {
     const changeFormVisibility = () => setDoneFormVisible(prev => !prev)
 
     return (
-        <div className="overflow-x-auto ">
+        <div className="overflow-x-auto">
             {userTask.length > 0 && (
                 <table className="table ">
                     <thead>
@@ -47,7 +47,7 @@ export default function UserTasksList({ userTask }: { userTask: userTasks[] }) {
                     <tbody>
                         {
                             userTask.map(task =>
-                                <tr key={task.id} className='w-full hover h-6 overflow-y-scroll'>
+                                <tr key={task.id} className='w-full hover h-6'>
                                     <td>{RowNo++}</td>
                                     <td className={clsx(task.status != "Done" && 'font-bold','flex flex-row gap-2 items-center')}>
                                         {<div>task.title</div>}

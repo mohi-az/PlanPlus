@@ -19,7 +19,7 @@ export default function NotesList() {
         })
     }, [ChangeFav])
     return (
-        <div className="overflow-x-auto ">
+        <div className="overflow-x-auto  overflow-y-auto">
             <table className="table ">
                 {/* head */}
                 <thead>

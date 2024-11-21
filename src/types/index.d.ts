@@ -24,3 +24,16 @@ type userTasks = {
         remindAt: Date;
     } | null;
 }
+type tasksMetric = {
+    totalTasks: Number,
+    completedTasks: Number,
+    completedTasksThisWeek: Number,
+    pendingTasks: Number,
+    upcomingTasks: Number
+}
+
+type monthlyReport = {
+    month: String,
+    done_count: Number,
+    todo_count: Number
+}

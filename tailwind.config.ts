@@ -18,32 +18,35 @@ const config: Config = {
       ,
       height: {
         "remain": "calc(100vh - 10%)",
-        "120":"480px",
-        "130":"520px",
+        "120": "480px",
+        "130": "520px",
         "Adivider": "calc(100vh - 23%)",
         "AdividerWithoutBTN": "calc(100vh - 12%)",
 
       },
-      minHeight:{
-       "remain": "calc(100vh - 10%)",
-        "120":"480px",
-        "130":"520px",
-        "Adivider": "calc(100vh - 23%)",
-        "AdividerWithoutBTN": "calc(100vh - 12%)",
-
-      },
-      maxHeight:{
+      minHeight: {
         "remain": "calc(100vh - 10%)",
-         "120":"480px",
-         "130":"520px",
-         "Adivider": "calc(100vh - 23%)",
-         "AdividerWithoutBTN": "calc(100vh - 12%)",
-       }
+        "120": "480px",
+        "130": "520px",
+        "Adivider": "calc(100vh - 23%)",
+        "AdividerWithoutBTN": "calc(100vh - 12%)",
+
+      },
+      maxHeight: {
+        "remain": "calc(100vh - 10%)",
+        "120": "480px",
+        "130": "520px",
+        "Adivider": "calc(100vh - 23%)",
+        "AdividerWithoutBTN": "calc(100vh - 12%)",
+      },
+      borderWidth: {
+        "1": "1px"
+      }
     },
   },
   plugins: [daisyui],
   daisyui: {
-    themes: ["light", "dark", "aqua", "dracula", "dim", "forest","night"]
+    themes: ["light", "dark", "aqua", "dracula", "dim", "forest", "night"]
 
   }
 };

@@ -1,7 +1,9 @@
 "use server"
 import { auth } from "@/auth";
 import { prisma } from "@/prisma";
+import { taskStatus } from "@/types/enums";
 import { Tasks } from "@prisma/client";
+import moment from "moment";
 
 export const AddTask = async ({ title, description, dueDate, reminderDateTime }: { title: string, description: string, dueDate: Date, reminderDateTime: string | null }): Promise<ActionResult<Tasks>> => {
     try {
@@ -56,7 +58,7 @@ export const UpdateTask = async ({ taskId, title, description, dueDate, reminder
                 }
             })
             if (reminderDateTime && reminer === null) {
-                 await prisma.reminders.create({
+                await prisma.reminders.create({
                     data: {
                         remindAt: new Date(reminderDateTime),
                         isSent: false,
@@ -223,4 +225,73 @@ export const ChangeFavNote = async (noteId: string): Promise<ActionResult<boolea
         return { status: "error", error: "You are not allowed to see this note!" }
     }
 
+}
+
+export const GetMetrics = async (): Promise<ActionResult<tasksMetric>> => {
+    const Session = await auth();
+    if (Session?.user?.id) {
+        const response = await prisma.tasks.findMany({
+            where: { userId: Session?.user?.id },
+            select: {
+                id: true,
+                dueDate: true,
+                status: true,
+                completeAt: true,
+
+            }
+        });
+
+        return {
+            status: "success",
+            data: {
+                completedTasks: response.filter(t => t.status === taskStatus.Done).length,
+                completedTasksThisWeek: response.filter(t => t.status === taskStatus.Done &&
+                    (t.completeAt && moment(t.completeAt).weekYear === moment(Date.now()).weekYear)).length,
+                pendingTasks: response.filter(t => t.status === taskStatus.ToDo).length,
+                totalTasks: response.length,
+                upcomingTasks: response.filter(t => t.dueDate &&
+                    moment(t.dueDate).diff(Date.now(), 'days') > 0 && moment(t.dueDate).diff(Date.now(), 'days') < 5).length
+
+            }
+        }
+
+    }
+    else return { status: "error", error: "Something went wrong!" }
+
+}
+export const MonthlyReport = async (): Promise<ActionResult<monthlyReport>> => {
+
+    const Session = await auth();
+    const user = Session?.user?.id;
+    if (user) {
+        const tasks = await prisma.$queryRaw`
+WITH months AS (
+    SELECT 
+        TO_CHAR(generate_series(
+            DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '5 months', 
+            DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month', 
+            '1 month'
+        ), 'yyyy-mm') AS month
+)
+SELECT 
+    m.month,
+    CAST( COALESCE(SUM(CASE WHEN t.status = 'Done' THEN 1 ELSE 0 END), 0) AS INTEGER) AS done_count,
+    CAST( COALESCE(SUM(CASE WHEN t.status = 'Todo' THEN 1 ELSE 0 END), 0) AS INTEGER) AS todo_count
+FROM 
+    months m
+LEFT JOIN 
+    "Tasks" t
+ON 
+    TO_CHAR(t."createdAt", 'yyyy-mm') = m.month
+    and t."userId" = ${user} 
+GROUP BY 
+    m.month
+ORDER BY 
+    m.month ASC LIMIT 100
+    
+
+                    ` as monthlyReport;
+        return { status: "success", data: tasks }
+    }
+    else return { status: "error", error: "Something went wrong!" }
 }

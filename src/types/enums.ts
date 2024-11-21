@@ -1,0 +1,1 @@
+export enum  taskStatus {  Done="Done" , ToDo="Todo" }
