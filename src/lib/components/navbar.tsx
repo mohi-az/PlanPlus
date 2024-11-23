@@ -13,7 +13,7 @@ export default async function Navbar({ session }: { session: Session }) {
     return (
         <>
             <div className="navbar bg-neutral">
-                <div className="flex-1 text-2xl pl-10 text-orange-400">
+                <div className="flex-1 text-2xl pl-14 lg:pl-10 text-orange-400">
                     Plan Plus <span className=' pb-3 text-sm'>+</span><span className=' pb-2 text-base'>+</span>
                 </div>
                 <div className="flex-none gap-2 ">

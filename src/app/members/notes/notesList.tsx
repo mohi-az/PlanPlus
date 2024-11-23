@@ -20,15 +20,15 @@ export default function NotesList() {
     }, [ChangeFav])
     return (
         <div className="overflow-x-auto  overflow-y-auto">
-            <table className="table ">
+            <table className="table-xs md:table-sm lg:table-md w-full">
                 {/* head */}
                 <thead>
                     <tr>
                         <th></th>
-                        <th className='lg:font-semibold text-sm lg:text-lg'>note</th>
+                        <th className='lg:font-semibold text-sm lg:text-lg'>Note</th>
                         <th className='lg:font-semibold text-sm lg:text-lg'>Task Title</th>
-                        <th className='lg:font-semibold text-sm lg:text-lg'>Description</th>
-                        <th className='lg:font-semibold text-sm lg:text-lg'>Complete date</th>
+                        <th className='lg:font-semibold text-sm lg:text-lg hidden md:table-cell'>Task Description</th>
+                        <th className='lg:font-semibold text-sm lg:text-lg  hidden md:table-cell'>Complete date</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -39,8 +39,8 @@ export default function NotesList() {
                                 <td>{RowNo++}</td>
                                 <td>{note.note}</td>
                                 <td> {note.task.title}</td>
-                                <td> {note.task.description}</td>
-                                <td> {note.task.completeAt ? new Date(note.task.completeAt).toDateString() : ''}</td>
+                                <td className=' hidden md:table-cell'> {note.task.description}</td>
+                                <td className=' hidden md:table-cell'> {note.task.completeAt ? new Date(note.task.completeAt).toDateString() : ''}</td>
                                 <td>
                                     <div className='md:tooltip-top' data-tip="Mark as Favourite">
                                         {isPending && selectedNote === note.id ?

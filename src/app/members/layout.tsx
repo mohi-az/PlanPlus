@@ -8,12 +8,12 @@ import React from 'react'
 export default async function layout({ children }: { children: React.ReactNode }) {
     const session = await auth();
     return (
-        <div className='flex flex-col  w-full h-lvh overflow-y-hidden '>
+        <div className='flex flex-col  w-full h-dvh overflow-hidden '>
             <div className='bg-red-300 '>
                 {session && <Navbar session={session} />}
             </div>
             <div className='flex flex-row' >
-                <div className=''>
+                <div className='z-10'>
                     <Sidebar />
                 </div>
                 <div className='w-full '>

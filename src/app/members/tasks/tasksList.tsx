@@ -31,16 +31,16 @@ export default function UserTasksList({ userTask }: { userTask: userTasks[] }) {
     const changeFormVisibility = () => setDoneFormVisible(prev => !prev)
 
     return (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-hidden">
             {userTask.length > 0 && (
-                <table className="table ">
+                <table className="table-xs md:table-sm lg:table-md w-full">
                     <thead>
                         <tr>
                             <th></th>
-                            <th className='lg:font-semibold text-sm lg:text-lg'>Task title</th>
-                            <th className='lg:font-semibold text-sm lg:text-lg'>Description</th>
-                            <th className='lg:font-semibold text-sm lg:text-lg'>Due date</th>
-                            <th ></th>
+                            <th className='lg:font-semibold text-sm lg:text-lg'>Title</th>
+                            <th className='lg:font-semibold text-sm lg:text-lg hidden lg:table-cell'>Description</th>
+                            <th className='lg:font-semibold text-sm lg:text-lg hidden lg:table-cell'>Due date</th>
+                            <th className='hidden lg:table-cell' ></th>
                             <th className='lg:font-semibold text-sm lg:text-lg text-center'>Status</th>
                         </tr>
                     </thead>
@@ -50,28 +50,29 @@ export default function UserTasksList({ userTask }: { userTask: userTasks[] }) {
                                 <tr key={task.id} className='w-full hover h-6'>
                                     <td>{RowNo++}</td>
                                     <td className={clsx(task.status != "Done" && 'font-bold','flex flex-row gap-2 items-center')}>
-                                        {<div>task.title</div>}
+                                        {<div className='cursor-pointer'  onClick={() => {
+                                                setSelectedTask(task);
+                                                setShowingModal(true);
+                                            }}>{task.title } {<span className='lg:hidden text-xs text-gray-400'>{task.dueDate ? ` - Due date: ${new Date(task.dueDate).toDateString()}` : ''}</span>}</div>}
                                         {
 
                                             task.reminder && 
-                                            <div className='tooltip tooltip-top' data-tip={'Remind at : ' +task.reminder.remindAt.toLocaleString()}>
+                                            <div className='tooltip tooltip-top hidden lg:table-cell' data-tip={'Remind at : ' +task.reminder.remindAt.toLocaleString()}>
 
                                                 <Image src={'/images/reminderIcon.gif'} width={30} height={30} alt='reminder Icon'/>
                                             </div>
                                         }
                                     </td>
-                                    <td className={clsx(task.status != "Done" && 'font-bold')}> {task.description}</td>
-                                    <td> {task.dueDate ? new Date(task.dueDate).toDateString() : ''}</td>
-                                    
-                                    <td>
+                                    <td className={clsx(task.status != "Done" && 'font-bold','hidden lg:table-cell')}> {task.description}</td>
+                                    <td className='text-smX2 hidden lg:table-cell'> {task.dueDate ? new Date(task.dueDate).toDateString() : ''}</td>
+                            
+                                    <td className='hidden lg:table-cell'>
                                         <button className="btn btn-ghost btn-sm md:btn-md"
-                                            onClick={() => {
-                                                setSelectedTask(task);
-                                                setShowingModal(true);
-                                            }}>View / Edit</button>
+                                            onClick={() => {setSelectedTask(task);setShowingModal(true);}}>View / Edit</button>
                                     </td>
                                     <td >
-                                        <img className={clsx('w-7 md:w-14 m-auto', task.status === "Cancel" && 'w-5 md:w-10')}
+                                        <Image className={clsx('w-7 md:w-12 m-auto', task.status === "Cancel" && 'w-5 md:w-10')}
+                                        width={45} height={45} alt='stat'
                                             src={task.status === "Done" ?
                                                 '/images/done.gif' : task.status === "Todo" ?
                                                     '/images/todo.gif' : '/images/cancel.gif'}
@@ -90,7 +91,7 @@ export default function UserTasksList({ userTask }: { userTask: userTasks[] }) {
                                                     }
                                                     className="btn btn-square btn-ghost ">
 
-                                                    <Image unoptimized={true}
+                                                    <Image className='w-6 md:w-9'
                                                         key={task.id + "DELETE"}
                                                         src={deletebtnActive === task.id ? '/images/delete.gif' : '/images/delete.png'}
                                                         width={35} height={45} alt='Delete IMG' />
@@ -111,7 +112,7 @@ export default function UserTasksList({ userTask }: { userTask: userTasks[] }) {
                                                         }
                                                         className="btn btn-square btn-ghost " >
 
-                                                        <Image unoptimized={true} key={task.id + "Done"}
+                                                        <Image className='w-9 md:w-14' key={task.id + "Done"}
                                                             src={donebtnActive === task.id ? '/images/donebtn.gif' : '/images/donebtn.png'}
                                                             width={55} height={45} alt='Done IMG' />
                                                     </button>

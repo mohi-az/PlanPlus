@@ -17,15 +17,15 @@ const config: Config = {
       }
       ,
       height: {
-        "remain": "calc(100vh - 10%)",
+        "remain": "calc(100dvh - 10%)",
         "120": "480px",
         "130": "520px",
         "Adivider": "calc(100vh - 23%)",
         "AdividerWithoutBTN": "calc(100vh - 12%)",
-
+        "remainInDashboard": "calc(100dvh - 42%)",
       },
       minHeight: {
-        "remain": "calc(100vh - 10%)",
+        "remain": "calc(100dvh - 10%)",
         "120": "480px",
         "130": "520px",
         "Adivider": "calc(100vh - 23%)",
@@ -33,7 +33,7 @@ const config: Config = {
 
       },
       maxHeight: {
-        "remain": "calc(100vh - 10%)",
+        "remain": "calc(100dvh - 10%)",
         "120": "480px",
         "130": "520px",
         "Adivider": "calc(100vh - 23%)",
@@ -41,6 +41,9 @@ const config: Config = {
       },
       borderWidth: {
         "1": "1px"
+      },
+      fontSize: {
+        "smX2": ['0.93rem', '1.4rem'],
       }
     },
   },
