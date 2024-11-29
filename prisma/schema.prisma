@@ -80,29 +80,33 @@ model Authenticator {
 }
 
 model Tasks {
-  id          String       @id @default(cuid())
+  id          String      @id @default(cuid())
   title       String
   description String?
   status      String
   dueDate     DateTime?
-  createdAt   DateTime     @default(now())
+  createdAt   DateTime    @default(now())
   updatedAt   DateTime?
   completeAt  DateTime?
-  caregory    Categories[]
-  user        User         @relation(fields: [userId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
   userId      String
   priority    String?
   reminder    Reminders?
   note        TaskNote?
+  category    Categories? @relation(fields: [categoryId], references: [id])
+  categoryId  String?
 }
 
 model Categories {
-  id        String   @id @unique @default(cuid())
-  userId    String
-  name      String
-  createdAt DateTime @default(now())
-  User      User     @relation(fields: [userId], references: [id])
-  Tasks     Tasks[]
+  id          String   @id @unique @default(cuid())
+  userId      String
+  name        String
+  description String?
+  icon        String?
+  showInMenu  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  User        User     @relation(fields: [userId], references: [id])
+  Tasks       Tasks[]
 }
 
 model Reminders {
@@ -139,9 +143,9 @@ model TaskNote {
 }
 
 model Logs {
-  id     String @id @default(cuid())
-  type   String
-  url    String?
-  detail String
+  id       String   @id @default(cuid())
+  type     String
+  url      String?
+  detail   String
   dateTime DateTime @default(now())
 }

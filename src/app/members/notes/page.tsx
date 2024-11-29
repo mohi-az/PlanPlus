@@ -13,7 +13,7 @@ export default function Notes() {
                     {isPending ? <TableSkeleton />
                         :
                         <NotesList />
-                    }
+}
                 </div>
             </NotesProvider>
         </div>

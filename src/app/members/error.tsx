@@ -1,24 +1,23 @@
 "use client"
-import Image from 'next/image'
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { AddLog } from '../actions/systemAction'
 import { usePathname } from 'next/navigation'
-
+import ErroL from '@/assets/lotties/Error.json'
+import Lottie from 'lottie-react'
 export default function Error({ error, reset, }: { error: Error & { digest?: string }, reset: () => void }) {
   const pt = usePathname();
-  const Loggingٍrror = async () => await AddLog({ detail: error.message, type: 'Error', url: pt })
+  const LogginError = useCallback(async () => { await AddLog({ detail: error.message, type: 'Error', url: pt }) }, [error, pt])
   useEffect(() => {
-    Loggingٍrror();
-  }, [error])
+    LogginError();
+  }, [LogginError])
   return (
 
     <div className='w-full h-lvh content-center '>
 
-      <div className='flex flex-col md:flex-row  w-full justify-center items-center '>
-        <Image unoptimized={true} src={'/images/404.gif'} width={150} height={150} alt='This page could not be found.' />
+      <div className='flex flex-col  w-full justify-center items-center gap-10'>
+        <Lottie animationData={ErroL} loop={false} className='w-96' />
         <div className='flex flex-col gap-4'>
-          <h2>Something went wrong!</h2>
-          <button className='btn btn-accent' onClick={() => reset()}>Try again</button>
+          <button className='btn btn-warning btn-wide' onClick={() => reset()}>Try again</button>
         </div>
       </div>
     </div>

@@ -5,10 +5,7 @@ import React, { useActionState } from 'react'
 import { handleUsersLogin } from '@/app/actions/authActions';
 import { FaGithub, FaGoogle } from 'react-icons/fa';
 export default  function Page() {
-    
-    const [error, LoginAction, isPending] = useActionState(handleUsersLogin
-        , null
-    )
+    const [error, LoginAction, isPending] = useActionState(handleUsersLogin, null)
     return (
         <div className='w-full'>
             <form action={LoginAction}>
@@ -41,7 +38,7 @@ export default  function Page() {
 
                 <div className='text-sm md:text-base  flex flex-col pt-5'>
 
-                    {error && error.map(issue => <span className='text-orange-300 text-left'>- {issue.message}</span>)}
+                    {error && error.map(issue => <span key={issue.code} className='text-orange-300 text-left'>- {issue.message}</span>)}
                 </div>
 
 

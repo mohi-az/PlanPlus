@@ -5,7 +5,7 @@ import { taskStatus } from "@/types/enums";
 import { Tasks } from "@prisma/client";
 import moment from "moment";
 
-export const AddTask = async ({ title, description, dueDate, reminderDateTime }: { title: string, description: string, dueDate: Date, reminderDateTime: string | null }): Promise<ActionResult<Tasks>> => {
+export const AddTask = async ({ title, description, dueDate, reminderDateTime, categoryId }: { title: string, description: string, dueDate: string | null, reminderDateTime: string | null, categoryId: string | null }): Promise<ActionResult<Tasks>> => {
     try {
         console.log("Adding the Task....")
         const Session = await auth();
@@ -14,12 +14,13 @@ export const AddTask = async ({ title, description, dueDate, reminderDateTime }:
         if (Session?.user?.id) {
             const response = await prisma.tasks.create({
                 data: {
-                    title: title,
-                    description: description,
-                    dueDate: dueDate ? dueDate : null,
+                    title,
+                    description,
+                    dueDate: dueDate ? new Date(dueDate) : null,
                     status: "Todo",
                     createdAt: new Date(Date.now()),
                     userId: Session.user.id,
+                    categoryId,
                     reminder
                 }
             })
@@ -30,13 +31,13 @@ export const AddTask = async ({ title, description, dueDate, reminderDateTime }:
             return { status: "error", error: "Somthing went wrong! Please try again." }
 
     }
-    catch (error) {
-        console.log(error);
-        return { status: "error", error: "Somthing went wrongffff!" }
+    catch {
+
+        return { status: "error", error: "Somthing went wrong!" }
     }
 
 }
-export const UpdateTask = async ({ taskId, title, description, dueDate, reminderDateTime }: { taskId: string, title: string, description: string, dueDate: Date, reminderDateTime: string | null }): Promise<ActionResult<Tasks>> => {
+export const UpdateTask = async ({ taskId, title, description, dueDate, reminderDateTime, categoryId }: { taskId: string, title: string, description: string, dueDate: string | null, reminderDateTime: string | null, categoryId: string | null }): Promise<ActionResult<Tasks>> => {
     try {
         const Session = await auth();
         const reminer = await prisma.reminders.findUnique({ where: { taskId: taskId } })
@@ -48,12 +49,13 @@ export const UpdateTask = async ({ taskId, title, description, dueDate, reminder
                     id: taskId,
                 },
                 data: {
-                    title: title,
-                    description: description,
-                    dueDate: dueDate ? dueDate : null,
+                    title,
+                    description,
+                    dueDate: dueDate ? new Date(dueDate) : null,
                     status: "Todo",
                     createdAt: new Date(Date.now()),
                     userId: Session.user.id,
+                    categoryId,
                     reminder
                 }
             })
@@ -76,45 +78,57 @@ export const UpdateTask = async ({ taskId, title, description, dueDate, reminder
             return { status: "error", error: "Somthing went wrong! Please try again." }
 
     }
-    catch (error) {
-        console.log(error);
+    catch {
+
         return { status: "error", error: "Somthing went wrongffff!" }
     }
 
 }
 
 export const GetUserTask = async (): Promise<ActionResult<userTasks[]>> => {
-
-    const Session = await auth();
-    if (Session?.user) {
-        const userTasks = await prisma.tasks.findMany({
-            where: {
-                userId: Session.user.id
-            }
-            , orderBy: {
-                id: "desc"
-            }
-            , select: {
-                id: true,
-                createdAt: true,
-                description: true,
-                title: true,
-                dueDate: true,
-                status: true, userId: true,
-                reminder: {
-                    select:
-                    {
-                        remindAt: true,
-                        id: true
-                    }
+    try {
+        const Session = await auth();
+        if (Session?.user) {
+            const userTasks = await prisma.tasks.findMany({
+                where: {
+                    userId: Session.user.id
                 }
-            }
-        })
-        if (userTasks)
-            return { status: "success", data: userTasks }
-        else return { status: "error", error: "There isn't any row to show" }
+                , orderBy: {
+                    id: "desc"
+                }
+                , select: {
+                    id: true,
+                    createdAt: true,
+                    description: true,
+                    title: true,
+                    dueDate: true,
+                    status: true, userId: true,
+                    category: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    reminder: {
+                        select:
+                        {
+                            remindAt: true,
+                            id: true
+                        }
+                    }
+
+                }
+            })
+            if (userTasks)
+                return { status: "success", data: userTasks }
+            else return { status: "error", error: "There isn't any row to show" }
+        }
+        return { status: "error", error: "Somthing went wrong in read the tasks" }
     }
-    return { status: "error", error: "Somthing went wrong in read the tasks" }
+    catch {
+
+        throw new Error("Sonthing went wrong")
+    }
 }
 export const DeleteTask = async (taskId: string): Promise<ActionResult<null>> => {
     try {
@@ -132,7 +146,8 @@ export const DeleteTask = async (taskId: string): Promise<ActionResult<null>> =>
             return { status: "error", error: "You are not allowed to change this task!" }
         }
     }
-    catch (error) {
+    catch {
+
         return { status: "error", error: "Something went wrong!" }
     }
 }
@@ -160,8 +175,7 @@ export const ChangeTaskStatus = async (taskId: string, status: string, note?: st
             return { status: "error", error: "You are not allowed to change this task!" }
         }
     }
-    catch (error) {
-        console.log(error)
+    catch {
         return { status: "error", error: "Something went wrong" }
     }
 
@@ -259,7 +273,8 @@ export const GetMetrics = async (): Promise<ActionResult<tasksMetric>> => {
         }
         else return { status: "error", error: "Something went wrong!" }
     }
-    catch (error) {
+    catch {
+
         return { status: "error", error: "something went wrong!" }
     }
 
@@ -298,4 +313,104 @@ export const MonthlyReport = async (): Promise<ActionResult<monthlyReport>> => {
         return { status: "success", data: tasks }
     }
     else return { status: "error", error: "Something went wrong!" }
+}
+
+export const GetTaskCategories = async (): Promise<ActionResult<category[]>> => {
+
+    try {
+        const Session = await auth();
+        if (Session?.user) {
+
+            const response = await prisma.categories.findMany({
+                where: {
+                    userId: Session.user.id
+                }
+                , select: {
+                    id: true, name: true, description: true, icon: true, showInMenu: true
+                }
+
+            })
+            return { status: "success", data: response }
+
+        }
+        else
+            return { status: "error", error: "You don't have permission to see categories" }
+
+    } catch {
+
+        return { status: "error", error: "Something went wrong" }
+    }
+}
+export const AddCategory = async (category: category): Promise<ActionResult<category>> => {
+    try {
+        const Session = await auth();
+        if (Session?.user?.id) {
+            const response = await prisma.categories.create({
+                data: {
+                    name: category.name,
+                    description: category.description,
+                    icon: category.icon,
+                    showInMenu: category.showInMenu,
+                    createdAt: new Date(Date.now()),
+                    userId: Session.user.id
+                }, select: {
+                    id: true, name: true, description: true, icon: true, showInMenu: true
+
+                }
+            })
+            return { status: "success", data: response }
+        }
+        else
+            return { status: "error", error: "You don't have permission to add a category" }
+
+    } catch {
+
+        return { status: "error", error: "Something went wrong" }
+    }
+}
+export const UpdateCategory = async (category: category): Promise<ActionResult<category>> => {
+    try {
+        const Session = await auth();
+        if (Session?.user?.id) {
+            const response = await prisma.categories.update({
+                where: { id: category.id },
+                data: {
+                    name: category.name,
+                    description: category.description,
+                    icon: category.icon,
+                    showInMenu: category.showInMenu,
+                }
+                , select: {
+                    id: true, name: true, description: true, icon: true, showInMenu: true
+                }
+            })
+            return { status: "success", data: response }
+        }
+        else
+            return { status: "error", error: "You don't have permission to edit the category" }
+    } catch {
+
+        return { status: "error", error: "Something went wrong" }
+    }
+}
+export const DeleteCategory = async (category: category): Promise<ActionResult<boolean>> => {
+    try {
+        const Session = await auth();
+        if (Session?.user?.id) {
+            const TaskCount = await prisma.tasks.findMany({
+                where: {
+                    categoryId: category.id
+                }
+            })
+            if (TaskCount.length > 0) return { status: "error", error: `You are not allowed to delete this category, you have already used this category for ${TaskCount.length} tasks.` }
+            await prisma.categories.delete({ where: { id: category.id } })
+            return { status: "success", data: true }
+        }
+        else
+            return { status: "error", error: "You don't have permission to delete the category" }
+
+    } catch {
+
+        return { status: "error", error: "Something went wrong" }
+    }
 }

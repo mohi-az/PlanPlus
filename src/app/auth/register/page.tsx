@@ -5,16 +5,18 @@ import { redirect } from 'next/navigation';
 import React, { useActionState, useState } from 'react'
 import { registerSchema } from '@/lib/schemas/registerSchema'
 import clsx from 'clsx';
+import { ZodIssue } from 'zod';
 
 type form = {
     name?: string,
     email?: string
 }
+
 export default function Register() {
     const [formValues, setFormValues] = useState<form>();
     const [error, submitLogin, isPending] = useActionState(
 
-        async (previousState: any, formData: FormData) => {
+        async (_previousState: ZodIssue[] | null, formData: FormData) => {
 
             setFormValues({ name: formData.get("name")?.toString(), email: formData.get("email")?.toString() })
             const validatedData = registerSchema.safeParse({
@@ -25,6 +27,7 @@ export default function Register() {
                 const response = await RegisterUser({ ...validatedData.data });
                 if (response.status === "success")
                     redirect("/auth/login");
+                return null
             }
             else
                 return validatedData.error.issues
@@ -72,7 +75,7 @@ export default function Register() {
                 <div className='text-sm md:text-base  flex flex-col pt-5'>
                     <span >By creating account, you agree to our Terms of Service</span>
                     <span>Or sign in using:</span>
-                    {error && error.map(issue => <span className='text-orange-300 text-left'>- {issue.message}</span>)}
+                    {error && error.map(issue => <span key={issue.code}  className='text-orange-300 text-left'>- {issue.message}</span>)}
                 </div>
 
             </form>

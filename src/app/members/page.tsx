@@ -5,11 +5,10 @@ import { GetMetrics, GetUserTask, MonthlyReport } from '../actions/userActions';
 import { taskStatus } from '@/types/enums';
 import PieChart from '@/lib/components/pieChart';
 import moment from 'moment';
-// import dynamic from 'next/dynamic';
 import UpcomingTask from './upcomingTask';
-
-
-
+import pending from '@/assets/lotties/Pending.json'
+import Done from '@/assets/lotties/Done.json'
+import AllTasks from '@/assets/lotties/AllTasks.json'
 
 export default async function Page() {
     const metrics = await GetMetrics();
@@ -21,22 +20,21 @@ export default async function Page() {
         <div className=' h-remain overflow-y-scroll overflow-x-hidden md:overflow-hidden flex flex-col -mb-10'>
         
                 <div className=" rounded-md bg-base-200 mx-4 mb-4 p-5 flex flex-col md:flex-grow-0 "  >
-                    {/* <div className='pb-5 text-lg text-white'>Tasks  Summary</div> */}
                     {metrics.status === "success" ? 
                     <div className='stats stats-vertical   md:stats-horizontal shadow overflow-hidden'>
                         <div className='hero bg-base-300 w-full stat '>
                             <Stat title='Total Tasks' value={metrics.data.totalTasks.toString()} desc='All tasks in your list.'
-                                gif={"AllTasks.gif"} />
+                              icon={AllTasks} />
                         </div>
                         <div className='hero bg-base-300  w-full stat '>
                             <Stat title='Completed Tasks' value={metrics.data.completedTasks.toString()}
                                 desc={`You've completed ${metrics.data.completedTasksThisWeek.toString()} tasks this week.`}
-                                gif={"idea.gif"} />
+                                icon={Done} />
                         </div>
                         <div className='hero bg-base-300  w-full stat '>
                             <Stat title='Pending Tasks'
                                 value={metrics.data.pendingTasks.toString()}
-                                desc={`${metrics.data.upcomingTasks.toString()} tasks due soon.`} gif={'Pending.gif'} />
+                                desc={`${metrics.data.upcomingTasks.toString()} tasks due soon.`} icon={pending} />
                         </div>
                     </div> : ''}
                 </div>

@@ -1,8 +1,10 @@
+'use client'
 import clsx from 'clsx';
-import Image from 'next/image';
-import React from 'react'
+import Lottie from 'lottie-react';
 
-export default async function UpcomingTask({ userUpcomingTasks }: { userUpcomingTasks: userTasks[] }) {
+import React from 'react'
+import confettie from '@/assets/lotties/confetti.json'
+export default  function UpcomingTask({ userUpcomingTasks }: { userUpcomingTasks: userTasks[] }) {
     
     let RowNo = 1;
     return (
@@ -34,8 +36,7 @@ export default async function UpcomingTask({ userUpcomingTasks }: { userUpcoming
         )
             : <div className='flex flex-col items-center h-1/2 gap-1 md:gap-5 justify-center'>
                 <div>
-                    <Image src={'/images/confettiicon.gif'} width={120} height={120} 
-                        alt='No upcoming tasks—enjoy your day!' />
+                        <Lottie animationData={confettie}  loop={false} className='w-32'/>
                 </div>
                 <div className='pb-1'>No upcoming tasks—enjoy your day!</div>
             </div>

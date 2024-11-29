@@ -17,6 +17,10 @@ type userTasks = {
     title: string;
     description: string | null;
     status: string;
+    category: {
+        name:string,
+        id:string
+    }| null;
     dueDate: Date | null;
     createdAt: Date;
     userId: string;
@@ -25,15 +29,22 @@ type userTasks = {
     } | null;
 }
 type tasksMetric = {
-    totalTasks: Number,
-    completedTasks: Number,
-    completedTasksThisWeek: Number,
-    pendingTasks: Number,
-    upcomingTasks: Number
+    totalTasks: number,
+    completedTasks: number,
+    completedTasksThisWeek: number,
+    pendingTasks: number,
+    upcomingTasks: number
 }
 
 type monthlyReport = {
-    month: String,
-    done_count: Number,
-    todo_count: Number
+    month: string,
+    done_count: number,
+    todo_count: number
+}
+type category = {
+    name: string;
+    id?: string;
+    description: string | null;
+    icon: string | null;
+    showInMenu: boolean;
 }

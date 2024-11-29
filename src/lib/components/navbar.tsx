@@ -1,6 +1,7 @@
 
 import { signOut } from '@/auth'
 import { Session } from 'next-auth';
+import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react'
 
@@ -21,9 +22,7 @@ export default async function Navbar({ session }: { session: Session }) {
 
                     {session?.user ?
                         <>
-                            <div className="form-control">
-                                <input type="text" placeholder="Search tasks" className="input input-bordered w-32 input-sm md:w-auto" />
-                            </div>
+                           
                             <button className="btn btn-ghost btn-circle">
                                 <div className="indicator">
                                     <svg
@@ -37,8 +36,8 @@ export default async function Navbar({ session }: { session: Session }) {
                             <div className="dropdown dropdown-end">
                                 <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                                     <div className="w-10 rounded-full">
-                                        <img alt="Tailwind CSS Navbar component"
-                                            src={session?.user.image ?? 'images/avatar.png'} />
+                                        <Image alt="Avatar"
+                                            src={session?.user.image ?? 'images/avatar.png'} width={25} height={25} />
                                     </div>
                                 </div>
                                 <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">

@@ -16,6 +16,9 @@ const config: Config = {
         dark: '#171821',
       }
       ,
+      width:{
+          '18': '72px'
+      },
       height: {
         "remain": "calc(100dvh - 10%)",
         "120": "480px",
