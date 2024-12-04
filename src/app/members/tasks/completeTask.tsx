@@ -7,7 +7,7 @@ import React, { useActionState, useContext } from 'react'
 export default function CompleteTask({ taskId, visible, changeVisibility }: { taskId: string, visible: boolean, changeVisibility: () => void, }) {
     const { doneTask } = useContext(TasksContext);
     const [state, changeStatus, isPending] = useActionState(
-        async (prevState: any, formData: FormData): Promise<ActionResult<Tasks>> => {
+        async (__prevState: any, formData: FormData): Promise<ActionResult<Tasks>> => {
             const note = formData.get("note")?.toString();
             const response = await doneTask(taskId, note && note);
             if (response.status = "success") {

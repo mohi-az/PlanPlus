@@ -4,6 +4,7 @@ import { TaskSchema } from '@/lib/schemas/taskSchema';
 import { TasksContext } from '@/contexts/tasksContext';
 import { CategoryContext } from '@/contexts/categoryContext';
 import Image from 'next/image';
+import { toast } from 'react-toastify';
 export default function TaskForm({ task, ChangeFormVisibility, showingModal }:
     { task: userTasks | null, ChangeFormVisibility: () => void, showingModal: boolean }) {
 
@@ -30,16 +31,19 @@ export default function TaskForm({ task, ChangeFormVisibility, showingModal }:
             if (!validatedData.success)
                 return validatedData.error.issues;
             if (task != null) {
-                await updateTask(validatedData.data, task.id);
-                ChangeFormVisibility();
+                const response = await updateTask(validatedData.data, task.id);
+                if (response.status === "success")
+                    toast("The Task has been updated successfully!")
             }
             else {
                 const response = await addTask(validatedData.data);
-                ChangeFormVisibility();
-
+                if (response.status === "success")
+                    toast("The Task has been added successfully!")
                 if (response && response.status === "error")
                     return response.error
             }
+            ChangeFormVisibility();
+
         }, null
     )
     useEffect(() => { setCategory(task?.category?.id ? task?.category?.id : '') }, [task])

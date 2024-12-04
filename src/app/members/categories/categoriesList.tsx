@@ -5,6 +5,7 @@ import { CategorySchema } from '@/lib/schemas/taskSchema';
 import clsx from 'clsx';
 import React, { useContext, useEffect, useState } from 'react'
 import { FcWorkflow } from 'react-icons/fc';
+import { toast } from 'react-toastify';
 
 export default function CategoriesList() {
     let RowNo = 1;
@@ -13,7 +14,7 @@ export default function CategoriesList() {
     const [isChecked, setIsChecked] = useState(false);
     const { categories, addCategory, isPending, updateCategory, deleteCategory } = useContext(CategoryContext)
     const IconList = ['FcList', 'FcMoneyTransfer', 'FcSlrBackSide', 'FcSalesPerformance', 'FcFactory', 'FcAdvance', 'FcAlarmClock', 'FcAdvertising', 'FcSportsMode', 'FcLikePlaceholder', 'FcTimeline', 'FcShare', 'FcShop', 'FcReading', 'FcPaid', 'FcLike', 'FcInvite', 'FcHome', 'FcGraduationCap', 'FcGlobe', 'FcFlashOn', 'FcEngineering', 'FcElectroDevices', 'FcDislike', 'FcComboChart', 'FcClapperboard', 'FcBookmark', 'FcBriefcase']
-    const ClickHandler = (formData: FormData) => {
+    const ClickHandler = async (formData: FormData) => {
         const categoryData = {
             name: formData.get('name'), description: formData.get('description'),
             icon: selectedIcon, showInMenu: formData.get('showInMenu') === 'on' ? true : false
@@ -22,22 +23,32 @@ export default function CategoriesList() {
         const validatedData = CategorySchema.safeParse(categoryData)
         if (validatedData.success) {
             if (selectedCategory?.id) {
-                updateCategory({ ...validatedData.data, id: selectedCategory?.id })
-                setSelectedCategory(null)
+                const response = await updateCategory({ ...validatedData.data, id: selectedCategory?.id })
+                if (response.status === "success") {
+                    toast("The category has been successfully updated!")
+                    setSelectedCategory(null)
+                }
             }
-            else
-                addCategory(validatedData.data)
+            else {
+                const response = await addCategory(validatedData.data)
+                if (response.status === "success")
+                    toast("The category has been added successfully!")
+                
+            }
         }
     }
     useEffect(() => {
-        if (selectedCategory){
-            setIsChecked(selectedCategory.showInMenu);  
+        if (selectedCategory) {
+            setIsChecked(selectedCategory.showInMenu);
             setSelectedIcon(selectedCategory.icon)
         }
     }, [selectedCategory]);
 
-    const deleteHandler= async(cat:category)=>{
-       await deleteCategory(cat)
+    const deleteHandler = async (cat: category) => {
+        const response = await deleteCategory(cat)
+        if (response.status = "success")
+            toast("The category has been deleted successfully!")
+
     }
     return (
         <div className="overflow-x-auto  flex flex-col  lg:flex-row gap-6 h-full">
@@ -74,8 +85,8 @@ export default function CategoriesList() {
                 </div>
                 <div className='flex lg:flex-col flex-row  gap-4 justify-end  pb-10'>
                     <button className="btn btn-accent btn-outline w-1/3 lg:w-full btn-sm md:btn-md">{selectedCategory ? 'Update' : 'Add Category'}</button>
-                    {selectedCategory && 
-                    <button className="btn btn-ghost btn-outline w-1/3 lg:w-full btn-sm md:btn-md " onClick={() => setSelectedCategory(null)}>Cancel</button>}
+                    {selectedCategory &&
+                        <button className="btn btn-ghost btn-outline w-1/3 lg:w-full btn-sm md:btn-md " onClick={() => setSelectedCategory(null)}>Cancel</button>}
                 </div>
             </form>
             <div className='w-full lg:w-2/3 h-3/5 lg:h-full rounded-md bg-base-200 p-5'>
