@@ -74,7 +74,6 @@ export default function Register() {
                 </div>
                 <div className='text-sm md:text-base  flex flex-col pt-5'>
                     <span >By creating account, you agree to our Terms of Service</span>
-                    <span>Or sign in using:</span>
                     {error && error.map(issue => <span key={issue.code}  className='text-orange-300 text-left'>- {issue.message}</span>)}
                 </div>
 

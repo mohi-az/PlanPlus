@@ -1,6 +1,7 @@
 # PlanPlus 📝🚀
 
 Hey there! 👋 Welcome to **PlanPlus**, a gamified to-do list app designed to make your daily tasks a little more fun and engaging. This project combines functionality with a bit of flair, aiming to enhance productivity while keeping users motivated through rewards and achievements.
+Live demo : https://plan-plus.vercel.app/
 
 ---
 
