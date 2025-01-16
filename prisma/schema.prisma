@@ -22,6 +22,7 @@ model User {
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
   achievements  UserAchievements[]
+  BadgeId       Int                @default(1)
 }
 
 model Account {
@@ -95,6 +96,7 @@ model Tasks {
   note        TaskNote?
   category    Categories? @relation(fields: [categoryId], references: [id])
   categoryId  String?
+  isAchieved  Boolean     @default(false)
 }
 
 model Categories {
@@ -121,8 +123,9 @@ model Achievements {
   id               String             @id @default(cuid())
   name             String
   description      String
-  pointsRequired   Int
+  points           Int
   badgeImageUrl    String
+  isRepeatable Boolean @default(false)
   userAchievements UserAchievements[]
 }
 
@@ -130,6 +133,7 @@ model UserAchievements {
   id            String       @id @default(cuid())
   userId        String
   achievementId String
+  completeAt    DateTime
   user          User         @relation(fields: [userId], references: [id])
   achievement   Achievements @relation(fields: [achievementId], references: [id])
 }
@@ -148,4 +152,11 @@ model Logs {
   url      String?
   detail   String
   dateTime DateTime @default(now())
+}
+
+model Badges {
+  id             Int    @id @default(autoincrement())
+  badgeTitle     String
+  pointsRequired Int
+  badgeIconURL   String
 }

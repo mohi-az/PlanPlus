@@ -1,5 +1,5 @@
 "use client"
-import { CategoryContext } from '@/contexts/categoryContext';
+import { CategoryContext } from '@/contexts/CategoryContext';
 import IconLoader from '@/lib/components/IconLoader';
 import { CategorySchema } from '@/lib/schemas/taskSchema';
 import clsx from 'clsx';

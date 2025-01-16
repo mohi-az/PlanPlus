@@ -48,3 +48,25 @@ type category = {
     icon: string | null;
     showInMenu: boolean;
 }
+type Badge={
+    badgeTitle:string,
+    badgeId:number,
+    badgeIconURL:string,
+    
+}
+type ranksType={
+    currentRank: number,
+    nextRank: number
+
+}
+type UserAchievementsType= {
+    id: string;
+    completeAt: Date | null;
+    achievement: {
+        name: string;
+        id: string;
+        description: string;
+        points: number;
+        badgeImageUrl: string;
+    };
+}

@@ -2,7 +2,6 @@
 import { signIn } from "@/auth";
 import { LoginSchema, LoginSchemaType } from "@/lib/schemas/loginSchema";
 import { prisma } from "@/prisma"
-import { User } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
@@ -11,10 +10,10 @@ import { ZodIssue } from "zod";
 
 export const GetUserByEmail = async (Email: string) => {
     return prisma.user.findUnique({
-        where: {email: Email},
+        where: { email: Email },
     })
 }
-export const RegisterUser = async ({ name, email, password }: { name: string, email: string, password: string }): Promise<ActionResult<User>> => {
+export const RegisterUser = async ({ name, email, password }: { name: string, email: string, password: string }): Promise<ActionResult<[]>> => {
     const hpass = await bcrypt.hash(password, 10);
     const findExist = await prisma.user.findUnique({ where: { email: email } });
     if (findExist) return { status: "error", error: "this E-mail is registred before!" }
@@ -26,7 +25,10 @@ export const RegisterUser = async ({ name, email, password }: { name: string, em
             createdAt: new Date(Date.now())
         }
     })
-    return { status: "success", data: response }
+    if (response)
+        return { status: "success", data: [] }
+    else return { status: "error", error: "Something went wrong!" }
+
 
 }
 export const signInUser = async (data: LoginSchemaType): Promise<ActionResult<string>> => {
@@ -66,7 +68,7 @@ export const handleUsersLogin = async (_preState: ZodIssue[] | any, formData: Fo
         if (!validatedData.success) return validatedData.error.issues
         const result = await signInUser(validatedData.data);
         if (result.status === 'success')
-            redirect('/members')          
+            redirect('/members')
         else {
             const errors = [{ message: "Invalid username or password!", path: ['password'], code: "custom", fatal: true }];
             return errors

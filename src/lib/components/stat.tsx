@@ -1,12 +1,12 @@
 'use client'
-import Lottie from 'lottie-react'
+import Lottie from '@/lib/components/Lottie'
 import React from 'react'
 
 export default function Stat({ icon, title, value, desc }: { icon?: any , title: string, value: string, desc: string }) {
     return (
         <div className="stat  w-full gap-1 sm:p-5 sm:px-6">
             <div className="stat-figure text-secondary w-16 md:w-24">
-                {icon &&  <Lottie animationData={icon}  /> }
+                {icon &&  <Lottie animationData={icon}  loop={true}/> }
             </div>
             <div className="stat-title">{title}</div>
             <div className="stat-value">{value}</div>

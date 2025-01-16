@@ -1,17 +1,20 @@
 'use client'
-import { TasksContext } from '@/contexts/tasksContext'
-import ModalForm from '@/lib/components/modalForm'
+import { AchievementsContext } from '@/contexts/AchievementsContext';
+import { TasksContext } from '@/contexts/TasksContext'
+import ModalForm from '@/lib/components/ModalForm'
 import { Tasks } from '@prisma/client';
 import React, { useActionState, useContext } from 'react'
 
 export default function CompleteTask({ taskId, visible, changeVisibility }: { taskId: string, visible: boolean, changeVisibility: () => void, }) {
     const { doneTask } = useContext(TasksContext);
+    const {updateAchievements} = useContext(AchievementsContext);
     const [state, changeStatus, isPending] = useActionState(
         async (__prevState: any, formData: FormData): Promise<ActionResult<Tasks>> => {
             const note = formData.get("note")?.toString();
             const response = await doneTask(taskId, note && note);
             if (response.status = "success") {
                 changeVisibility();
+                updateAchievements();
                 return response
             }
             else return { status: "error", error: "Something went wrong!" }

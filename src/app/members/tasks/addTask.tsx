@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from 'react'
-import TaskForm from './taskForm';
+import TaskForm from './TaskForm';
 
 export default function AddNewTask() {
     const [showingModal, setShowingModal] = useState(false);

@@ -1,5 +1,5 @@
 "use client"
-import { NotesContext } from '@/contexts/notesContext';
+import { NotesContext } from '@/contexts/NotesContext';
 import Image from 'next/image';
 import React, { useCallback, useContext, useState, useTransition } from 'react'
 
@@ -23,7 +23,7 @@ export default function NotesList() {
             <table className="table-xs md:table-sm lg:table-md w-full">
                 {/* head */}
                 <thead>
-                    <tr>
+                    <tr className='bg-gradient-to-r from-cyan-500 to-blue-500 text-black font-bold text-lg'>
                         <th></th>
                         <th className='lg:font-semibold text-sm lg:text-lg'>Note</th>
                         <th className='lg:font-semibold text-sm lg:text-lg'>Task Title</th>

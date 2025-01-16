@@ -1,6 +1,6 @@
 "use client"
 import { AddCategory, DeleteCategory, GetTaskCategories, UpdateCategory } from "@/app/actions/userActions";
-import { createContext, useEffect, useState, useTransition } from "react"
+import { createContext, useEffect, useState } from "react"
 type contextType = {
     categories: category[],
     addCategory: (category: category) => Promise<ActionResult<category>>
@@ -18,15 +18,15 @@ const initValues: contextType = {
 export const CategoryContext = createContext(initValues);
 export const CategoryProvider = ({ children }: { children: React.ReactNode }) => {
     const [categories, setCategories] = useState<category[]>([]);
-    const [isPending, startTransition] = useTransition();
+    const [isPending, setIsPending] = useState(false);
 
     const GetCategories = async () => {
-        startTransition(async () => {
-            const respoinse = await GetTaskCategories();
-            if (respoinse.status === "success")
-                setCategories(respoinse.data)
-            return
-        })
+        setIsPending(true)
+        const respoinse = await GetTaskCategories();
+        setIsPending(false)
+        if (respoinse.status === "success")
+            setCategories(respoinse.data)
+        return
     }
     useEffect(() => {
         GetCategories();

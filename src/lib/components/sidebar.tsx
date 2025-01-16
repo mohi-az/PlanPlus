@@ -1,5 +1,5 @@
 "use client"
-import { CategoryContext } from '@/contexts/categoryContext'
+import { CategoryContext } from '@/contexts/CategoryContext'
 import Link from 'next/link'
 import React, { useContext } from 'react'
 import { FaTasks } from 'react-icons/fa'
@@ -24,14 +24,14 @@ export default function Sidebar() {
         { link: '/members/categories', title: 'Categories', icon: () => <MdCategory /> },
     ]
     return (
-        <div className="drawer lg:drawer-open h-dvh md:h-remain  flex">
+        <div className="drawer lg:drawer-open h-full flex">
             <input id="PlanPlusSlider" type="checkbox" className="drawer-toggle" />
             <div className='fixed top-0' >
                 <label htmlFor="PlanPlusSlider" className="btn btn-ghost drawer-button text-xl pt-5 sm:pt-4 sm:text-3xl  lg:hidden text-white" >
                     <RiMenuFold4Fill />
                 </label>
             </div>
-            <div className="drawer-side h-dvh md:h-remain ">
+            <div className="drawer-side h-full ">
                 <label htmlFor="PlanPlusSlider" aria-label="close sidebar" className="drawer-overlay"></label>
                 <ul className="menu bg-base-200  text-base-content min-h-full w-80 p-4 text-sm md:text-base lg:text-lg">
                     {MenuItems.map(menu => <li key={menu.link} className={clsx(Path === menu.link && 'bg-base-300 font-bold')}>

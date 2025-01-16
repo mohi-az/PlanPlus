@@ -1,8 +1,8 @@
 "use client"
-import { CategoryContext, CategoryProvider } from '@/contexts/categoryContext'
+import { CategoryContext, CategoryProvider } from '@/contexts/CategoryContext'
 import React, { useContext } from 'react'
-import CategoriesList from './categoriesList'
-import TableSkeleton from '@/lib/skeletons/table'
+import CategoriesList from './CategoriesList'
+import TableSkeleton from '@/lib/skeletons/Table'
 export default function Page() {
   const { isPending } = useContext(CategoryContext)
 

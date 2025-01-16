@@ -1,8 +1,10 @@
 "use server"
+import { auth } from "@/auth"
 import { prisma } from "@/prisma"
+import { Badges } from "@prisma/client"
 
 export const AddLog = async ({ detail, type, url }: { detail: string, type: string, url: string }) => {
-    
+
     const response = await prisma.logs.create({
         data: {
             detail,
@@ -11,4 +13,68 @@ export const AddLog = async ({ detail, type, url }: { detail: string, type: stri
         }
     })
     return response
+}
+export const GetBadge = async (id: number): Promise<ActionResult<Badges>> => {
+    const response = await prisma.badges.findFirst({ where: { id } })
+    if (response) return { status: "success", data: response }
+    else return { status: "error", error: "Something went wrong!" }
+}
+export const GetAllBadge = async (): Promise<ActionResult<Badges[]>> => {
+    const Session = await auth();
+
+    if (Session?.user) {
+        const response = await prisma.badges.findMany()
+        if (response) return { status: "success", data: response }
+        else return { status: "error", error: "Something went wrong!" }
+    }
+    else
+        return { status: "error", error: "Something went wrong!" }
+}
+export const GetUserBadge = async (): Promise<ActionResult<Badges>> => {
+    const Session = await auth();
+    if (Session?.user) {
+        const currentUser = await prisma.user.findUnique({ where: { id: Session.user.id } })
+        const response = await prisma.badges.findFirst({ where: { id: currentUser?.BadgeId } })
+        if (response) return { status: "success", data: response }
+        else return { status: "error", error: "Something went wrong!" }
+    }
+    else
+        return { status: "error", error: "Something went wrong!" }
+}
+export const GetUserAchievements = async (): Promise<ActionResult<UserAchievementsType[]>> => {
+    const Session = await auth();
+    if (Session?.user) {
+        const response = await prisma.userAchievements.findMany(
+            {where:{ userId: Session.user.id },
+                select: {
+                    id: true,
+                    completeAt: true,
+                    achievement: true
+                }
+            }
+        )
+        if (response) {
+            const allAchievements = await prisma.achievements.findMany();
+            const mergedAchievements = allAchievements.map((achievement) => {
+                const userAchievement = response.find((res) => res.achievement.id === achievement.id);
+                return {
+                    id: userAchievement ? userAchievement.id : '',
+                    completeAt: userAchievement ? userAchievement.completeAt : null,
+                    achievement: {
+                        id: achievement.id,
+                        name: achievement.name,
+                        description: achievement.description,
+                        points: achievement.points,
+                        badgeImageUrl: achievement.badgeImageUrl,
+                    }
+                };
+            });
+            return { status: "success", data: mergedAchievements }
+
+        }
+        else return { status: "error", error: "Something went wrong!" }
+
+    }
+    else
+        return { status: "error", error: "Something went wrong!" }
 }

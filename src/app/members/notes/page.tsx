@@ -1,8 +1,8 @@
 "use client"
 import React, { useContext } from 'react'
-import NotesList from './notesList'
-import { NotesContext, NotesProvider } from '@/contexts/notesContext'
-import TableSkeleton from '@/lib/skeletons/table'
+import NotesList from './NotesList'
+import { NotesContext, NotesProvider } from '@/contexts/NotesContext'
+import TableSkeleton from '@/lib/skeletons/Table'
 
 export default function Notes() {
     const { isPending } = useContext(NotesContext)

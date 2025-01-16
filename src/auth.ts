@@ -9,17 +9,15 @@ import GitHub from "next-auth/providers/github"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  debug: true,
   session: { strategy: "jwt" },
   providers: [
     Credentials({
 
       credentials: {
         email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
-
         console.log("Starting authorization...");
         const validated = LoginSchema.safeParse(credentials)
         if (validated.success) {
@@ -53,9 +51,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async session({ token, session }) {
-      if (token.sub && session.user)
+      if (token.sub && session.user){
         session.user.id = token.sub;
+      }
       return session
-    }
+    },
   }
-})
+}
+)

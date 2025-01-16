@@ -5,7 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 export default  function PieChart({ data }: { data: any }) {
         
   return (
-    <div className='w-full h-full min-h-56'>
+    <div className='w-full h-full min-h-56 md:h-[95%]'>
 
       <ResponsiveContainer className='w-full '>
         <BarChart data={data} margin={{ top: 30,left:10,right:10, bottom: 50 }}>

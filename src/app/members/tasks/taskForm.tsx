@@ -1,8 +1,8 @@
 import React, { useActionState, useContext, useEffect, useState } from 'react'
-import ModalForm from '@/lib/components/modalForm'
+import ModalForm from '@/lib/components/ModalForm'
 import { TaskSchema } from '@/lib/schemas/taskSchema';
-import { TasksContext } from '@/contexts/tasksContext';
-import { CategoryContext } from '@/contexts/categoryContext';
+import { TasksContext } from '@/contexts/TasksContext';
+import { CategoryContext } from '@/contexts/CategoryContext';
 import Image from 'next/image';
 import { toast } from 'react-toastify';
 export default function TaskForm({ task, ChangeFormVisibility, showingModal }:
