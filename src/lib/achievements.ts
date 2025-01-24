@@ -137,7 +137,7 @@ export async function calculateAchievements(): Promise<calculateAchievementsResp
     if (response.status === "success") {
         const totalPoints = response.data
             .filter(items => items.completeAt != null)
-            .map(items => items.achievement.points)
+            .map(items => items.achievements.points)
             .reduce((prevVal: number, nextVal: number) => prevVal + nextVal, 0)
         const newBadge = badges.findLast(badge => totalPoints >= badge.pointsRequired);
         if (currentUser.BadgeId != newBadge?.id) {
