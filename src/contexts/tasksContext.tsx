@@ -88,7 +88,6 @@ export const TasksProvider = ({ children }: { children: React.ReactNode }) => {
         const response = await ChangeTaskStatus(taskId, "Done", note)
         if (response.status === "success") {
             GetTasks();
-
         }
         return response
     }

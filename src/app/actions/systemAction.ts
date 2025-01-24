@@ -45,7 +45,8 @@ export const GetUserAchievements = async (): Promise<ActionResult<UserAchievemen
     const Session = await auth();
     if (Session?.user) {
         const response = await prisma.userAchievements.findMany(
-            {where:{ userId: Session.user.id },
+            {
+                where: { userId: Session.user.id },
                 select: {
                     id: true,
                     completeAt: true,
@@ -56,20 +57,22 @@ export const GetUserAchievements = async (): Promise<ActionResult<UserAchievemen
         if (response) {
             const allAchievements = await prisma.achievements.findMany();
             const mergedAchievements = allAchievements.map((achievement) => {
-                const userAchievement = response.find((res) => res.achievement.id === achievement.id);
+                const userAchievement = response.filter((res) => res.achievement.id === achievement.id);
                 return {
-                    id: userAchievement ? userAchievement.id : '',
-                    completeAt: userAchievement ? userAchievement.completeAt : null,
-                    achievement: {
+                    id: userAchievement.length>0 ? userAchievement[0].id : '',
+                    completeAt: userAchievement.length>0 ? userAchievement[userAchievement.length-1].completeAt : null,
+                    count: userAchievement.length,
+                    achievements: {
                         id: achievement.id,
                         name: achievement.name,
                         description: achievement.description,
                         points: achievement.points,
                         badgeImageUrl: achievement.badgeImageUrl,
+                        isRepeatable : achievement.isRepeatable
                     }
                 };
             });
-            return { status: "success", data: mergedAchievements }
+            return { status: "success", data: mergedAchievements.sort((a,b)=>a.achievements.points - b.achievements.points) }
 
         }
         else return { status: "error", error: "Something went wrong!" }

@@ -168,7 +168,6 @@ export const ChangeTaskStatus = async (taskId: string, status: string, note?: st
                     note: createNote
                 }
             })
-          
             return { status: "success", data: response }
 
         }
@@ -287,27 +286,27 @@ export const MonthlyReport = async (): Promise<ActionResult<monthlyReport>> => {
     if (user) {
         const tasks = await prisma.$queryRaw`
                                     WITH months AS (
-                                        SELECT 
+                                        SELECT
                                             TO_CHAR(generate_series(
-                                                DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '5 months', 
-                                                DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month', 
+                                                DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '5 months',
+                                                DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month',
                                                 '1 month'
                                             ), 'yyyy-mm') AS month
                                     )
-                                    SELECT 
+                                    SELECT
                                         m.month,
                                         CAST( COALESCE(SUM(CASE WHEN t.status = 'Done' THEN 1 ELSE 0 END), 0) AS INTEGER) AS done_count,
                                         CAST( COALESCE(SUM(CASE WHEN t.status = 'Todo' THEN 1 ELSE 0 END), 0) AS INTEGER) AS todo_count
-                                    FROM 
+                                    FROM
                                         months m
-                                    LEFT JOIN 
+                                    LEFT JOIN
                                         "Tasks" t
-                                    ON 
+                                    ON
                                         TO_CHAR(t."createdAt", 'yyyy-mm') = m.month
-                                        and t."userId" = ${user} 
-                                    GROUP BY 
+                                        and t."userId" = ${user}
+                                    GROUP BY
                                         m.month
-                                    ORDER BY 
+                                    ORDER BY
                                         m.month ASC LIMIT 100
 
                     ` as monthlyReport;

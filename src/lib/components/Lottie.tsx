@@ -15,12 +15,11 @@ const LottieAnimation = ({ animationData, loop = true,className,delayLoop=false 
         animationData,
         loop,
       });
-  
+
       if (delayLoop) {
-        const interval = setInterval(() => {
+         setInterval(() => {
           animationInstance.current?.goToAndPlay(0, true);
         }, 10000);
-        return () => clearInterval(interval); // Clean up the interval
       }
     }
     return () => {

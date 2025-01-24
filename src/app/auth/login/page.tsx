@@ -31,7 +31,7 @@ export default  function Page() {
 
                 <span>Or sign in using:</span>
                 <div className='gap-4 flex justify-center pt-3 flex-col md:flex-row'>
-                    <button className="btn btn-outline md:w-1/3" name='action' value={"google"}><FaGoogle /> Google</button>
+                    <button className="btn btn-outline md:w-1/3 " name='action' value={"google"} disabled><FaGoogle /> Google</button>
                     <button className="btn btn-outline md:w-1/3" name='action' value={"github"}><FaGithub /> Github</button>
                 </div>
 

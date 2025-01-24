@@ -1,5 +1,6 @@
 "use server";
 import { auth } from "@/auth";
+import { AchievementsProvider } from "@/contexts/AchievementsContext";
 import { CategoryProvider } from "@/contexts/CategoryContext";
 import { TasksProvider } from "@/contexts/TasksContext";
 import Navbar from "@/lib/components/Navbar";
@@ -17,20 +18,21 @@ export default async function layout({
   return (
     <div className="flex flex-col  w-full h-dvh overflow-hidden ">
       <ToastContainer position="bottom-right" theme="dark" />
-
       <div className="bg-red-300 ">
         {session && <Navbar session={session} />}
       </div>
       <div className="flex flex-row h-full ">
         <TasksProvider>
           <CategoryProvider>
+          <AchievementsProvider>
             <div className="z-10">
               <Suspense fallback={<div>Loading...</div>}>
                 <Sidebar />
               </Suspense>
             </div>
             <div className="w-full h-full ">{children}</div>
-          </CategoryProvider>
+          </AchievementsProvider>
+        </CategoryProvider>
         </TasksProvider>
       </div>
     </div>

@@ -12,7 +12,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
   providers: [
     Credentials({
-
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
@@ -25,7 +24,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (!user || !user.passwordHash || !bcrypt.compareSync(validated.data.password, user.passwordHash)) {
             console.log("there is a Error ....")
             return null
-
           }
           else
             return user
@@ -50,12 +48,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
   ],
   callbacks: {
+    async jwt({ token, user }) {
+      if (user && user.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.email },
+        });
+
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.BadgeId = dbUser.BadgeId;
+        }
+      }
+      return token;
+    },
     async session({ token, session }) {
       if (token.sub && session.user){
         session.user.id = token.sub;
+        session.user.BadgeId = parseInt(token.BadgeId as string);
       }
       return session
-    },
+    }
+
   }
 }
 )

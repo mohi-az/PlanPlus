@@ -1,18 +1,24 @@
+"use server"
+import { GetUserAchievements } from "@/app/actions/systemAction";
 import { auth } from "@/auth";
 import { prisma } from "@/prisma";
+import { Achievements, Badges } from "@prisma/client";
 
-export async function UpdateAchievements() {
+export async function calculateAchievements(): Promise<calculateAchievementsResponse | void> {
     const Session = await auth();
     if (!Session?.user?.id) return;
-    const userId = Session?.user.id
+    const currentUser = await prisma.user.findUnique({ where: { id: Session.user.id } })
+    if (!currentUser) return
+    const newachievement: Achievements[] = [];
+    let newBalge: Badges | null = null;
     const completedTasks = await prisma.tasks.findMany({
         where: {
-            userId: userId,
+            userId: currentUser.id,
             status: "Done",
             completeAt: { not: null },
         },
     });
-    const userAchievement = await prisma.userAchievements.findMany({ where: { userId } });
+    const userAchievement = await prisma.userAchievements.findMany({ where: { userId: currentUser.id } });
     const completedTaskCount = completedTasks.length;
     const achievementsToCheck = [
         {
@@ -21,11 +27,11 @@ export async function UpdateAchievements() {
         },
         {
             key: "Daily Dedication",
-            condition: async () => await calculateStreak(userId, 7, true),
+            condition: async () => await calculateStreak(currentUser.id, 7, true),
         },
         {
             key: "Weekend Warrior",
-            condition: async () => await checkWeekendStreak(userId)
+            condition: async () => await checkWeekendStreak(currentUser.id)
         },
         {
             key: "Consistent Contributor",
@@ -37,7 +43,7 @@ export async function UpdateAchievements() {
         },
         {
             key: "Streak Keeper",
-            condition: async () => await calculateStreak(userId, 10)
+            condition: async () => await calculateStreak(currentUser.id, 10)
         },
         {
             key: "Goal Setter",
@@ -50,7 +56,7 @@ export async function UpdateAchievements() {
         },
         {
             key: "Productivity Guru",
-            condition: async () => await calculateUserPoints(userId) >= 500
+            condition: async () => await calculateUserPoints(currentUser.id) >= 500
         },
         {
             key: "Early Bird",
@@ -69,7 +75,7 @@ export async function UpdateAchievements() {
         {
             key: "Perfect Streak",
             condition: async () =>
-                userAchievement.filter(t => t.achievementId === "12").length === 0 && await calculateStreak(userId, 30)
+                userAchievement.filter(t => t.achievementId === "12").length === 0 && await calculateStreak(currentUser.id, 30)
         },
         {
             key: "Weekend Finisher",
@@ -91,7 +97,7 @@ export async function UpdateAchievements() {
         },
         {
             key: "Milestone Maker",
-            condition: async () => await calculateUserPoints(userId) >= 1000
+            condition: async () => await calculateUserPoints(currentUser.id) >= 1000
         },
         {
             key: "Creative Problem Solver",
@@ -109,21 +115,46 @@ export async function UpdateAchievements() {
         const selectedAchievement = await prisma.achievements.findFirst({ where: { name: achievement.key } })
         if (!selectedAchievement) return
         const existing = await prisma.userAchievements.findFirst({
-            where: { userId, achievementId: selectedAchievement.id },
+            where: { userId: currentUser.id, achievementId: selectedAchievement.id },
         });
         if (!existing || selectedAchievement.isRepeatable) {
             if (await achievement.condition()) {
+                newachievement.push(selectedAchievement); // Provide Data for result
                 await prisma.userAchievements.create({
                     data: {
-                        userId,
+                        userId: currentUser.id,
                         achievementId: selectedAchievement?.id,
                         completeAt: new Date(),
                     },
                 });
-                return achievement
             }
+
         }
     }
+    //Update user badge
+    const badges = await prisma.badges.findMany();
+    const response = await GetUserAchievements();
+    if (response.status === "success") {
+        const totalPoints = response.data
+            .filter(items => items.completeAt != null)
+            .map(items => items.achievement.points)
+            .reduce((prevVal: number, nextVal: number) => prevVal + nextVal, 0)
+        const newBadge = badges.findLast(badge => totalPoints >= badge.pointsRequired);
+        if (currentUser.BadgeId != newBadge?.id) {
+            await prisma.user.update({
+                where: {
+                    id: Session.user.id
+                },
+                data: {
+                    BadgeId: newBadge?.id
+                }
+            }
+            )
+            newBalge = newBadge ? newBadge : null;
+
+        }
+    }
+    return { Achievement: newachievement, badge: newBalge }
 }
 
 async function checkWeekendStreak(userId: string): Promise<boolean> {
@@ -156,7 +187,7 @@ async function checkWeekendStreak(userId: string): Promise<boolean> {
     });
 
     const result = saturdayTasks.length > 0 && sundayTasks.length > 0;
-    // if(result) 
+    // if(result)
     //     SelectedTasks = [...saturdayTasks,...saturdayTasks];
     return result
 
@@ -204,7 +235,7 @@ async function calculateStreak(userId: string, days: number, CheckforCreateTask:
         })
 
         if (tasksCompleted.length > 0) {
-            // SelectedTasks =tasksCompleted; 
+            // SelectedTasks =tasksCompleted;
             streakCount++
         }
         else break;

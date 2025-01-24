@@ -48,5 +48,5 @@ next-env.d.ts
 
 
 #OtherFiles
-next-auth.d.ts
+# next-auth.d.ts
 

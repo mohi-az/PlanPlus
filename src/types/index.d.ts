@@ -61,12 +61,18 @@ type ranksType={
 }
 type UserAchievementsType= {
     id: string;
-    completeAt: Date | null;
-    achievement: {
+    completeAt: Date | null; 
+    count: number;
+    achievements: {
         name: string;
         id: string;
         description: string;
         points: number;
         badgeImageUrl: string;
+        isRepeatable:boolean;
     };
+}
+type calculateAchievementsResponse = {
+    badge: Badges | null,
+    Achievement: Achievements[] | null;
 }
