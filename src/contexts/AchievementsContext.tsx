@@ -39,7 +39,6 @@ export const AchievementsProvider = ({ children }: { children: React.ReactNode }
             const response = await GetUserAchievements();
             if (response.status === "success") {
                 setUserAchievements(response.data)
-                debugger
                 setCurrentRank(response.data
                     .filter(items => items.completeAt != null)
                     .map(items => items.achievements.points * items.count)

@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation'
 // import ErroL from '@/assets/lotties/Error.json'
 // import LottieAnimation from "@/lib/components/Lottie";
 export default function Error({ error, reset, }: { error: Error & { digest?: string }, reset: () => void }) {
-  debugger
   const pt = usePathname();
   const LogginError = useCallback(async () => { await AddLog({ detail: error.message, type: 'Error', url: pt }) }, [error, pt])
   useEffect(() => {
