@@ -1,5 +1,5 @@
 "use server"
-import { GetUserAchievements } from "@/app/actions/systemAction";
+import { AddUserNotifications, GetUserAchievements } from "@/app/actions/systemAction";
 import { auth } from "@/auth";
 import { prisma } from "@/prisma";
 import { Achievements, Badges } from "@prisma/client";
@@ -127,6 +127,11 @@ export async function calculateAchievements(): Promise<calculateAchievementsResp
                         completeAt: new Date(),
                     },
                 });
+                if (!existing)
+                    await AddUserNotifications(`Congratulations! You unlocked the '${selectedAchievement.name}' achievement! You've earned '${selectedAchievement.points}' points. Keep going to upgrade your badge!`,
+                        "Achievement Unlocked!",
+                        "achievement"
+                    )
             }
 
         }
@@ -151,7 +156,10 @@ export async function calculateAchievements(): Promise<calculateAchievementsResp
             }
             )
             newBalge = newBadge ? newBadge : null;
-
+            await AddUserNotifications(`Amazing! You’ve earned the '${newBadge?.badgeTitle}' achievement for earning ${newBadge?.pointsRequired} points!`,
+                `Badge Earned:${newBadge?.badgeTitle}`,
+                "badge"
+            )
         }
     }
     return { Achievement: newachievement, badge: newBalge }

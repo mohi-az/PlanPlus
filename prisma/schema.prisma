@@ -23,6 +23,7 @@ model User {
   updatedAt     DateTime           @updatedAt
   achievements  UserAchievements[]
   BadgeId       Int                @default(1)
+  Notifications Notifications[]
 }
 
 model Account {
@@ -125,7 +126,7 @@ model Achievements {
   description      String
   points           Int
   badgeImageUrl    String
-  isRepeatable Boolean @default(false)
+  isRepeatable     Boolean            @default(false)
   userAchievements UserAchievements[]
 }
 
@@ -159,4 +160,15 @@ model Badges {
   badgeTitle     String
   pointsRequired Int
   badgeIconURL   String
+}
+
+model Notifications {
+  id          String      @id @default(uuid())
+  userId      String
+  title       String
+  description String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  type        String   @default("system")
+  user        User     @relation(fields: [userId], references: [id])
 }

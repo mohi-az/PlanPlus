@@ -1,7 +1,7 @@
 "use server"
 import { auth } from "@/auth"
 import { prisma } from "@/prisma"
-import { Badges } from "@prisma/client"
+import { Badges, Notifications } from "@prisma/client"
 
 export const AddLog = async ({ detail, type, url }: { detail: string, type: string, url: string }) => {
 
@@ -59,8 +59,8 @@ export const GetUserAchievements = async (): Promise<ActionResult<UserAchievemen
             const mergedAchievements = allAchievements.map((achievement) => {
                 const userAchievement = response.filter((res) => res.achievement.id === achievement.id);
                 return {
-                    id: userAchievement.length>0 ? userAchievement[0].id : '',
-                    completeAt: userAchievement.length>0 ? userAchievement[userAchievement.length-1].completeAt : null,
+                    id: userAchievement.length > 0 ? userAchievement[0].id : '',
+                    completeAt: userAchievement.length > 0 ? userAchievement[userAchievement.length - 1].completeAt : null,
                     count: userAchievement.length,
                     achievements: {
                         id: achievement.id,
@@ -68,11 +68,11 @@ export const GetUserAchievements = async (): Promise<ActionResult<UserAchievemen
                         description: achievement.description,
                         points: achievement.points,
                         badgeImageUrl: achievement.badgeImageUrl,
-                        isRepeatable : achievement.isRepeatable
+                        isRepeatable: achievement.isRepeatable
                     }
                 };
             });
-            return { status: "success", data: mergedAchievements.sort((a,b)=>a.achievements.points - b.achievements.points) }
+            return { status: "success", data: mergedAchievements.sort((a, b) => a.achievements.points - b.achievements.points) }
 
         }
         else return { status: "error", error: "Something went wrong!" }
@@ -80,4 +80,56 @@ export const GetUserAchievements = async (): Promise<ActionResult<UserAchievemen
     }
     else
         return { status: "error", error: "Something went wrong!" }
+}
+
+export const GetUserNotifications = async (): Promise<ActionResult<Notifications[]>> => {
+
+    const Session = await auth();
+    if (Session?.user?.id) {
+        const response = await prisma.notifications.findMany({
+            where: {
+                userId: Session.user.id
+            }
+        })
+        return { status: "success", data: response }
+    }
+    else
+        return { status: "error", error: "Something went wrong!" }
+
+}
+export const AddUserNotifications = async (description: string, title: string, type: string): Promise<ActionResult<Notifications>> => {
+
+    const Session = await auth();
+    if (Session?.user?.id) {
+        const response = await prisma.notifications.create({
+            data: {
+                description,
+                title,
+                createdAt: new Date(Date.now()),
+                isRead: false,
+                userId: Session.user.id,
+                type
+            }
+        })
+        return { status: "success", data: response }
+    }
+    else
+        return { status: "error", error: "Something went wrong!" }
+
+}
+export const ChangeUserNotificationStatus = async () => {
+
+    const Session = await auth();
+    if (Session?.user?.id) {
+         await prisma.notifications.updateMany({
+            where:{userId:Session.user.id},
+            data: {
+                isRead: true,
+            }
+        })
+        return { status: "success" }
+    }
+    else
+        return { status: "error", error: "Something went wrong!" }
+
 }
