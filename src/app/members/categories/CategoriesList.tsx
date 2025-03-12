@@ -8,7 +8,6 @@ import { FcWorkflow } from 'react-icons/fc';
 import { toast } from 'react-toastify';
 
 export default function CategoriesList() {
-    let RowNo = 1;
     const [selectedIcon, setSelectedIcon] = useState<string | null>();
     const [selectedCategory, setSelectedCategory] = useState<category | null>();
     const [isChecked, setIsChecked] = useState(false);
@@ -103,9 +102,9 @@ export default function CategoriesList() {
                         </thead>
                         <tbody>
                             {categories &&
-                                categories.map(cat =>
+                                categories.map((cat,index) =>
                                     <tr key={cat.id} className='w-full hover h-6 overflow-y-scroll'>
-                                        <td>{RowNo++}</td>
+                                        <td>{index+1}</td>
                                         <td>{cat.name}</td>
                                         <td className=' text-base md:text-lg lg:text-2xl '> {
                                             cat.icon ? <IconLoader name={cat.icon} /> : <FcWorkflow />}</td>

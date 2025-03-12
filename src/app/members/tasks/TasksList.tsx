@@ -12,7 +12,6 @@ import statCancel from '@/assets/lotties/stat-cancel.json'
 import LottieAnimation from '@/lib/components/Lottie';
 
 export default function UserTasksList({ userTask, filteredTasks }: { userTask: userTasks[], filteredTasks: userTasks[] | null }) {
-    let RowNo = 1;
     const [tasksList, setTasksList] = useState<userTasks[]>(userTask);
     const [showingModal, setShowingModal] = useState(false);
     const [dialogVisible, SetDialogVisible] = useState(false);
@@ -57,9 +56,9 @@ export default function UserTasksList({ userTask, filteredTasks }: { userTask: u
                         </thead>
                         <tbody>
                             {
-                                tasksList.map(task =>
+                                tasksList.map((task, index) =>
                                     <tr key={task.id} className='w-full hover h-6'>
-                                        <td>{RowNo++}</td>
+                                        <td>{index + 1}</td>
                                         <td className={clsx(task.status != "Done" && 'font-bold', 'flex flex-row gap-2 items-center')}>
                                             {<div className='cursor-pointer' onClick={() => {
                                                 setSelectedTask(task);

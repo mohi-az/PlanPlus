@@ -4,7 +4,6 @@ import Image from 'next/image';
 import React, { useCallback, useContext, useState, useTransition } from 'react'
 
 export default function NotesList() {
-    let RowNo = 1;
     const [isPending, startTransition] = useTransition();
     const { notes, ChangeFav } = useContext(NotesContext);
     const [selectedNote, setSelectedNote] = useState("");
@@ -34,9 +33,9 @@ export default function NotesList() {
                 </thead>
                 <tbody>
                     {notes &&
-                        notes.map(note =>
+                        notes.map((note,index) =>
                             <tr key={note.id} className='w-full hover h-6 overflow-y-scroll'>
-                                <td>{RowNo++}</td>
+                                <td>{index+1}</td>
                                 <td>{note.note}</td>
                                 <td> {note.task.title}</td>
                                 <td className=' hidden md:table-cell'> {note.task.description}</td>

@@ -21,7 +21,6 @@ export default function UpcomingTask() {
     useEffect(() => {
         GetUpcomingTasks();
     }, [])
-    let RowNo = 1;
     return (
         <div className='w-full align-top h-full'> 
         {isPending ? <div className='flex justify-center h-full items-center'> <Loading/></div>
@@ -39,9 +38,9 @@ export default function UpcomingTask() {
                         </thead>
                         <tbody>
                             {
-                                upcommingTasks.map(task =>
+                                upcommingTasks.map((task,index) =>
                                     <tr key={task.id} className='w-full hover h-6 overflow-y-scroll'>
-                                        <td>{RowNo++}</td>
+                                        <td>{index+1}</td>
                                         <td className={clsx(task.status != "Done" && 'font-bold', 'flex flex-row gap-2 items-center')}>
                                             {task.title}
                                         </td>
