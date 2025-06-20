@@ -9,9 +9,9 @@ export default function AddNewTask() {
         setShowingModal(prev => !prev)
     }
     return (
-         <div className='w-full '>
-            <button className=' btn btn-primary ' onClick={() => setShowingModal(true)}>Add new task</button>
-            <TaskForm task={null} ChangeFormVisibility={ChangeFormVisibility} showingModal={showingModal} />
+        <div className='w-full '>
+            <button className=' btn btn-primary ' onClick={() => setShowingModal(true)} data-testid="AddTaskButton">Add new task</button>
+            <TaskForm task={null} ChangeFormVisibility={ChangeFormVisibility} showingModal={showingModal} data-testid="TaskForm" />
         </div>
     )
 }

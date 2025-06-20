@@ -6,7 +6,7 @@ export default function Stat({ icon, title, value, desc }: { icon?: any , title:
     return (
         <div className="stat  w-full gap-1 sm:p-5 sm:px-6">
             <div className="stat-figure text-secondary w-16 md:w-24">
-                {icon &&  <Lottie animationData={icon}  loop={true}/> }
+                {icon &&  <Lottie animationData={icon}  loop={true} data-testid="Icon"/> }
             </div>
             <div className="stat-title">{title}</div>
             <div className="stat-value">{value}</div>

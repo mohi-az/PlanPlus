@@ -22,13 +22,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (validated.success) {
           const user = await GetUserByEmail(validated.data.email)
           if (!user || !user.passwordHash || !bcrypt.compareSync(validated.data.password, user.passwordHash)) {
-            console.log("there is a Error ....")
-            return null
+            return null;
           }
           else
             return user
         }
-        else return null
+        else return null;
       },
     }),
     GitHub(
