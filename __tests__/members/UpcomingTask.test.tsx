@@ -4,13 +4,13 @@ import React from 'react'
 import { TasksContext } from '@/contexts/TasksContext';
 import { toast } from 'react-toastify';
 
-import { GetUserTask } from '../../app/actions/userActions';
+import { GetUserTask } from '@/app/actions/userActions';
 
 jest.mock('react-toastify', () => ({
     toast: { error: jest.fn() }
 }));
 
-jest.mock('../../app/actions/userActions', () => ({
+jest.mock('@/app/actions/userActions', () => ({
     GetUserTask: jest.fn(() => Promise.resolve({
         status: 'success',
         data: [],

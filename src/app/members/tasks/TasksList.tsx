@@ -40,7 +40,7 @@ export default function UserTasksList({ userTask, filteredTasks }: { userTask: u
         <div className="overflow-x-hidden">
             {tasksList.length > 0 ?
                 <div>
-                    <table className="table-xs md:table-sm lg:table-md w-full">
+                    <table className="table-xs md:table-sm lg:table-md w-full" data-testid="taskListTable">
                         <thead>
                             <tr className='bg-gradient-to-r from-cyan-500 to-blue-500 text-black font-bold text-lg'>
                                 <th></th>
@@ -77,7 +77,7 @@ export default function UserTasksList({ userTask, filteredTasks }: { userTask: u
                                         <td className='text-smX2 hidden lg:table-cell'> {task.dueDate ? new Date(task.dueDate).toDateString() : ''}</td>
 
                                         <td className='hidden lg:table-cell'>
-                                            <button className="btn btn-ghost btn-sm md:btn-md"
+                                            <button className="btn btn-ghost btn-sm md:btn-md" data-testid="editTaskbtn"
                                                 onClick={() => { setSelectedTask(task); setShowingModal(true); }}>View / Edit</button>
                                         </td>
                                         <td >
@@ -91,7 +91,7 @@ export default function UserTasksList({ userTask, filteredTasks }: { userTask: u
                                                 <span className="loading loading-spinner text-secondary"></span>
                                                 :
                                                 <div className="lg:tooltip" data-tip="Delete">
-                                                    <button
+                                                    <button data-testid="deleteTask"
                                                         onClick={() => {
                                                             SetDialogVisible(true);
                                                             setSelectedTask(task)
@@ -107,7 +107,7 @@ export default function UserTasksList({ userTask, filteredTasks }: { userTask: u
                                                     <span className="loading loading-spinner text-secondary"></span>
                                                     :
                                                     <div className="lg:tooltip" data-tip="Mark as Done">
-                                                        <button onClick={() => {
+                                                        <button data-testid="Donebtn" onClick={() => {
                                                             setDoneFormVisible(true);
                                                             setSelectedTask(task)
                                                         }

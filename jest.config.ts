@@ -19,6 +19,7 @@ const config: Config = {
     'next-auth/providers/credentials': '<rootDir>/__tests__/mocks/next-auth-providers-credentials.ts',
     '@/auth/prisma-adapter': '<rootDir>/__tests__/mocks/prisma-adapter.ts',
     'next-auth': '<rootDir>/__tests__/mocks/next-auth.ts',
+    "^@/(.*)$": "<rootDir>/src/$1"
 
   },
 }

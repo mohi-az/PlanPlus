@@ -1,10 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import AddNewTask from '../../../app/members/tasks/AddTask'
+import AddNewTask from '@/app/members/tasks/AddTask'
 
 const renderComponent = () => {
     return render(<AddNewTask />)
 }
-jest.mock('../../../app/members/tasks/TaskForm', () =>
+jest.mock('@/app/members/tasks/TaskForm', () =>
     function TaskForm(props: { showingModal: string }) {
         return <div data-testid="TaskForm" data-showingModal={props.showingModal ? "true" : "false"} />
     })

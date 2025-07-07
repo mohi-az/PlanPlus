@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react"
-import Stat from '../../../lib/components/Stat'
+import Stat from '@/lib/components/Stat'
 const MockData: { icon?: any, title: string, value: string, desc: string } = {
     desc: "All tasks in your list",
     title: "Total Tasks",
@@ -7,7 +7,7 @@ const MockData: { icon?: any, title: string, value: string, desc: string } = {
 }
 
 jest.mock('lottie-web')
-jest.mock('../../../lib/components/Lottie', () => function Lottie() {
+jest.mock('@/lib/components/Lottie', () => function Lottie() {
     return <div data-testid="Icon" />
 });
 
