@@ -2,7 +2,7 @@
 import { signOut } from '@/auth'
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useContext, useEffect } from 'react'
+import React, { useContext } from 'react'
 import Logo from './Logo';
 import { NotificationContext } from '@/contexts/NotificationsContext';
 import { useRouter } from 'next/navigation';
@@ -19,9 +19,7 @@ export default function Navbar() {
     const NotificationClickHandler = () => {
         router.push('/members/notifications')
     }
-    useEffect(() => {
-        console.log("log from navbar")
-    }, [notifications])
+    
     return (
         <>
             <div className="navbar bg-neutral">

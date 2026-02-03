@@ -25,7 +25,7 @@ const LottieAnimation = ({ animationData, loop = true,className,delayLoop=false 
     return () => {
       animationInstance.current?.destroy();
     };
-  }, [animationData, loop]);
+  }, [animationData, loop, delayLoop]);
 
   return( <div ref={animationRef}  className={clsx(className)}/>);
 };
