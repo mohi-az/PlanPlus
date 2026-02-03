@@ -10,7 +10,7 @@ interface LogContext {
 }
 
 class Logger {
-  private isDevelopment = process.env.NODE_ENV === 'development';
+  private isDevelopment = process.env.NODE_ENV !== 'production';
   
   private log(level: LogLevel, message: string, context?: LogContext) {
     // Don't log debug messages in production

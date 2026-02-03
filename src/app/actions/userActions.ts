@@ -46,8 +46,8 @@ export const UpdateTask = async ({ taskId, title, description, dueDate, reminder
             return { status: "error", error: ERROR_MESSAGES.UNAUTHORIZED }
         }
 
-        const reminder = await prisma.reminders.findUnique({ where: { taskId: taskId } })
-        const reminderUpdate = (reminder && reminderDateTime) ? { update: { remindAt: new Date(reminderDateTime), isSent: false } } : {}
+        const existingReminder = await prisma.reminders.findUnique({ where: { taskId: taskId } })
+        const reminderUpdate = (existingReminder && reminderDateTime) ? { update: { remindAt: new Date(reminderDateTime), isSent: false } } : {}
 
         const response = await prisma.tasks.update({
             where: {
@@ -65,7 +65,7 @@ export const UpdateTask = async ({ taskId, title, description, dueDate, reminder
             }
         })
         
-        if (reminderDateTime && reminder === null) {
+        if (reminderDateTime && existingReminder === null) {
             await prisma.reminders.create({
                 data: {
                     remindAt: new Date(reminderDateTime),
@@ -74,7 +74,7 @@ export const UpdateTask = async ({ taskId, title, description, dueDate, reminder
                 }
             })
         }
-        else if (reminderDateTime === null && reminder) {
+        else if (reminderDateTime === null && existingReminder) {
             await prisma.reminders.delete({ where: { taskId: taskId } });
         }
 
@@ -284,7 +284,7 @@ export const GetMetrics = async (): Promise<ActionResult<tasksMetric>> => {
                 completedTasksThisWeek: response.filter(t => 
                     t.status === TASK_STATUS.DONE &&
                     t.completeAt && 
-                    moment(t.completeAt).weekYear() === moment(Date.now()).weekYear()
+                    moment(t.completeAt).isSame(Date.now(), 'isoWeek')
                 ).length,
                 pendingTasks: response.filter(t => t.status === TASK_STATUS.TODO).length,
                 totalTasks: response.length,

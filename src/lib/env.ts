@@ -1,6 +1,7 @@
 /**
  * Environment variable validation using Zod
  * This ensures all required environment variables are present and valid at runtime
+ * Note: This module uses console.error directly since it runs before the logger is initialized
  */
 import { z } from 'zod';
 
@@ -23,6 +24,7 @@ export function validateEnv() {
     return envSchema.parse(process.env);
   } catch (error) {
     if (error instanceof z.ZodError) {
+      // Using console.error here is intentional as logger may not be initialized yet
       console.error('❌ Invalid environment variables:');
       error.issues.forEach((issue) => {
         console.error(`  - ${issue.path.join('.')}: ${issue.message}`);

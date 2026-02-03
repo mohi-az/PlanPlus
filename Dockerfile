@@ -1,15 +1,5 @@
 # Multi-stage build for optimized Docker image
-# Stage 1: Dependencies
-FROM node:22.13.0-alpine AS deps
-RUN apk add --no-cache openssl libc6-compat
-
-WORKDIR /app
-
-# Install dependencies based on the preferred package manager
-COPY package*.json ./
-RUN npm ci --omit=dev
-
-# Stage 2: Builder
+# Stage 1: Builder
 FROM node:22.13.0-alpine AS builder
 RUN apk add --no-cache openssl libc6-compat
 
@@ -26,7 +16,7 @@ RUN npx prisma generate
 # Build the application
 RUN npm run build
 
-# Stage 3: Runner - Production image
+# Stage 2: Runner - Production image
 FROM node:22.13.0-alpine AS runner
 RUN apk add --no-cache openssl libc6-compat dumb-init
 
