@@ -19,7 +19,7 @@ export default function NotificationList() {
             ChangeStatus();
         }, 3000); 
         return () => clearTimeout(timer);
-    }, []);
+    }, [ChangeStatus]);
 
     return (
         <div className="overflow-x-auto  overflow-y-auto">

@@ -6,6 +6,7 @@ import { GetUserByEmail } from "./app/actions/authActions"
 import bcrypt from "bcryptjs";
 import { LoginSchema } from "./lib/schemas/loginSchema"
 import GitHub from "next-auth/providers/github"
+import { logger } from "./lib/logger"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -17,17 +18,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
-        console.log("Starting authorization...");
+        logger.debug("Starting authorization...");
         const validated = LoginSchema.safeParse(credentials)
         if (validated.success) {
           const user = await GetUserByEmail(validated.data.email)
           if (!user || !user.passwordHash || !bcrypt.compareSync(validated.data.password, user.passwordHash)) {
+            logger.warn("Failed authentication attempt", { email: validated.data.email });
             return null;
           }
-          else
-            return user
+          logger.info("User authenticated successfully", { userId: user.id });
+          return user
         }
-        else return null;
+        logger.warn("Invalid credentials format");
+        return null;
       },
     }),
     GitHub(

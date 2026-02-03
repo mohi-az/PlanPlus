@@ -12,7 +12,7 @@ export default function TaskForm({ task, ChangeFormVisibility, showingModal }:
     const [category, setCategory] = useState('');
     const { categories } = useContext(CategoryContext)
     const [status, addNewTask, isPending] = useActionState(
-        async (__preState: any, formData: FormData) => {
+        async (_prevState: unknown, formData: FormData) => {
             const dueDate = formData.get('dueDate')?.toString();
             const reminderDate = formData.get('reminderDate');
             const reminderTime = formData.get('reminderTime');

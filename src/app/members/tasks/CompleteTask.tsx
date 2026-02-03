@@ -9,10 +9,10 @@ export default function CompleteTask({ taskId, visible, changeVisibility }: { ta
     const { doneTask } = useContext(TasksContext);
     const {updateAchievements} = useContext(AchievementsContext);
     const [state, changeStatus, isPending] = useActionState(
-        async (__prevState: any, formData: FormData): Promise<ActionResult<Tasks>> => {
+        async (_prevState: ActionResult<Tasks> | null, formData: FormData): Promise<ActionResult<Tasks>> => {
             const note = formData.get("note")?.toString();
             const response = await doneTask(taskId, note && note);
-            if (response.status = "success") {
+            if (response.status === "success") {
                 changeVisibility();
                 updateAchievements();
                 return response

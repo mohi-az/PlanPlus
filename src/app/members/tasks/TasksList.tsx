@@ -28,7 +28,7 @@ export default function UserTasksList({ userTask, filteredTasks }: { userTask: u
                 return
             }
             )
-    }, [selectedTask])
+    }, [selectedTask, deleteTask])
     const changeVisibility = useCallback(() => SetDialogVisible(prev => !prev), [])
     const changeFormVisibility = useCallback(() => setDoneFormVisible(prev => !prev), [])
     useEffect(() => {

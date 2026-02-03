@@ -1,27 +1,28 @@
 "use client"
-import React, { useContext, useEffect } from 'react'
+import React, { useCallback, useContext, useEffect } from 'react'
 import AddNewTask from './AddTask';
 import UserTasksList from '@/app/members/tasks/TasksList';
 import { TasksContext } from '@/contexts/TasksContext';
 import { useSearchParams } from 'next/navigation';
-import { AchievementsContext } from '@/contexts/AchievementsContext';
 import Loading from '@/lib/components/Loading';
 
 export default function UserTasks() {
     const { tasks, filterTasks, filteredTasks, isPending, filterTasksByCategory, resetFilters } = useContext(TasksContext);
-    const { userAchievements } = useContext(AchievementsContext);
-    const Filter = (id: string) => { filterTasksByCategory(id); }
+    
+    const Filter = useCallback((id: string) => { 
+        filterTasksByCategory(id); 
+    }, [filterTasksByCategory]);
+    
     const params = useSearchParams();
     const categoryName = params.get('ca');
+    
     useEffect(() => {
         if (categoryName)
             Filter(categoryName)
-        else resetFilters();
-    }, [categoryName])
-    useEffect(() => {
-
-        console.log("there is an edit in achievements")
-    }, [userAchievements ])
+        else 
+            resetFilters();
+    }, [categoryName, Filter, resetFilters])
+    
     return (
         <div className='w-full p-5 h-full '>
 
