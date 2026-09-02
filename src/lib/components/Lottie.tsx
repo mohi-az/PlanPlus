@@ -1,15 +1,25 @@
-"use client"
-import React, {  useEffect, useRef } from 'react';
-import lottie, { AnimationItem } from 'lottie-web';
-import clsx from 'clsx';
+"use client";
+import React, { useEffect, useRef } from "react";
+import lottie, { AnimationItem } from "lottie-web";
+import clsx from "clsx";
 
-
-const LottieAnimation = ({ animationData, loop = true,className,delayLoop=false }:{ animationData:object, loop:boolean,className?:string ,delayLoop?:boolean}) => {
+const LottieAnimation = ({
+  animationData,
+  loop = true,
+  className,
+  delayLoop = false,
+}: {
+  animationData: object;
+  loop: boolean;
+  className?: string;
+  delayLoop?: boolean;
+}) => {
   const animationRef = useRef<HTMLDivElement>(null);
   const animationInstance = useRef<AnimationItem | null>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && animationRef.current) {
+    let replayTimer: ReturnType<typeof setInterval> | undefined;
+    if (typeof window !== "undefined" && animationRef.current) {
       animationInstance.current = lottie.loadAnimation({
         container: animationRef.current,
         animationData,
@@ -17,17 +27,19 @@ const LottieAnimation = ({ animationData, loop = true,className,delayLoop=false 
       });
 
       if (delayLoop) {
-         setInterval(() => {
+        replayTimer = setInterval(() => {
           animationInstance.current?.goToAndPlay(0, true);
         }, 10000);
       }
     }
     return () => {
+      if (replayTimer) clearInterval(replayTimer);
       animationInstance.current?.destroy();
+      animationInstance.current = null;
     };
-  }, [animationData, loop]);
+  }, [animationData, delayLoop, loop]);
 
-  return( <div ref={animationRef}  className={clsx(className)}/>);
+  return <div ref={animationRef} className={clsx(className)} />;
 };
 
 export default LottieAnimation;

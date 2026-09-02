@@ -1,50 +1,57 @@
-"use client"
-import { ChangeFavNote, GetUserNotes } from "@/app/actions/userActions"
-import React, { createContext, useEffect, useState } from "react"
+"use client";
+import { changeFavouriteNote, getUserNotes } from "@/app/actions/userActions";
+import type { ActionResult, TaskNote } from "@/types/domain";
+import React, { createContext, useCallback, useEffect, useState } from "react";
 
-type notesContextType = {
-    notes: noteType[],
-    ChangeFav: (noteId: string) => Promise<ActionResult<boolean>>
-    isPending: boolean
-}
-const notesContextInitial: notesContextType = {
-    notes: [],
-    ChangeFav: async () => ({ status: "error", error: "" }),
-    isPending: false
-}
+type NotesContextType = {
+  notes: TaskNote[];
+  changeFavourite: (noteId: string) => Promise<ActionResult<boolean>>;
+  isPending: boolean;
+};
+const notesContextInitial: NotesContextType = {
+  notes: [],
+  changeFavourite: async () => ({ status: "error", error: "" }),
+  isPending: false,
+};
 export const NotesContext = createContext(notesContextInitial);
 
 export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
-    const [notes, setNotes] = useState<noteType[]>([])
-    const [isPending, setIsPending] = useState(false);
+  const [notes, setNotes] = useState<TaskNote[]>([]);
+  const [isPending, setIsPending] = useState(false);
 
-    const GetNotes = async () => {
-        setIsPending(true);
-        const response = await GetUserNotes();
-        setIsPending(false);
-
-        if (response.status === "success")
-            setNotes(response.data)
-        return
-
+  const getNotes = useCallback(async () => {
+    setIsPending(true);
+    try {
+      const response = await getUserNotes();
+      if (response.status === "success") setNotes(response.data);
+    } catch (error) {
+      console.error("Failed to fetch notes:", error);
+    } finally {
+      setIsPending(false);
     }
-    const ChangeFav = async (noteId: string): Promise<ActionResult<boolean>> => {
-        const response = await ChangeFavNote(noteId);
-
-        if (response.status === "success") {
-            GetNotes();
-            return { status: "success", data: true }
-        }
-        else {
-            return { status: "error", error: response.error }
-        }
-    }
-    useEffect(() => {
-        GetNotes();
-    }, [])
-    return (
-        <NotesContext.Provider value={{ notes, isPending, ChangeFav }}>
-            {children}
-        </NotesContext.Provider>
-    )
-}
+  }, []);
+  const changeFavourite = useCallback(
+    async (noteId: string): Promise<ActionResult<boolean>> => {
+      const response = await changeFavouriteNote(noteId);
+      if (response.status === "success") {
+        setNotes((current) =>
+          current.map((note) =>
+            note.id === noteId
+              ? { ...note, isFavourite: !note.isFavourite }
+              : note,
+          ),
+        );
+      }
+      return response;
+    },
+    [],
+  );
+  useEffect(() => {
+    void getNotes();
+  }, [getNotes]);
+  return (
+    <NotesContext.Provider value={{ notes, isPending, changeFavourite }}>
+      {children}
+    </NotesContext.Provider>
+  );
+};

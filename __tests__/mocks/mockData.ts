@@ -1,4 +1,6 @@
-export const mockUserTasks: userTasks[] = [
+import type { UserTask } from "@/types/domain";
+
+export const mockUserTasks: UserTask[] = [
   {
     id: "task-001",
     title: "Finish presentation slides",

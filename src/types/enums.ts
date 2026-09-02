@@ -1,1 +1,5 @@
-export enum  taskStatus {  Done="Done" , ToDo="Todo" }
+export enum TaskStatus {
+  Done = "Done",
+  Todo = "Todo",
+  Cancelled = "Cancel",
+}

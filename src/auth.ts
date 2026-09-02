@@ -1,11 +1,11 @@
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import NextAuth from "next-auth"
-import Credentials from "next-auth/providers/credentials"
-import { prisma } from "./prisma"
-import { GetUserByEmail } from "./app/actions/authActions"
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import { prisma } from "./prisma";
+import { getUserByEmail } from "./lib/server/users";
 import bcrypt from "bcryptjs";
-import { LoginSchema } from "./lib/schemas/loginSchema"
-import GitHub from "next-auth/providers/github"
+import { LoginSchema } from "./lib/schemas/loginSchema";
+import GitHub from "next-auth/providers/github";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -17,57 +17,49 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
-        console.log("Starting authorization...");
-        const validated = LoginSchema.safeParse(credentials)
+        const validated = LoginSchema.safeParse(credentials);
         if (validated.success) {
-          const user = await GetUserByEmail(validated.data.email)
-          if (!user || !user.passwordHash || !bcrypt.compareSync(validated.data.password, user.passwordHash)) {
-            return null;
-          }
-          else
-            return user
-        }
-        else return null;
+          const user = await getUserByEmail(validated.data.email);
+          if (!user || !user.passwordHash) return null;
+          const match = await bcrypt.compare(
+            validated.data.password,
+            user.passwordHash,
+          );
+          if (!match) return null;
+          return user;
+        } else return null;
       },
     }),
-    GitHub(
-      {
-        clientId: process.env.AUTH_GITHUB_ID,
-        clientSecret: process.env.AUTH_GITHUB_SECRET,
-        checks: ['pkce', 'state'],
-        authorization: {
-          params: {
-            prompt: "consent",
-            access_type: "offline",
-            response_type: "code"
-          }
-        }
-      }
-    ),
-
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET,
+      // Use state check for CSRF protection. PKCE is optional and
+      // should only be enabled if the GitHub OAuth app and provider
+      // configuration explicitly support it.
+      checks: ["state"],
+    }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user && user.email) {
         const dbUser = await prisma.user.findUnique({
-          where: { id: user.email },
+          where: { email: user.email },
         });
 
         if (dbUser) {
-          token.id = dbUser.id;
-          token.BadgeId = dbUser.BadgeId;
+          token.sub = dbUser.id;
+          token.badgeId = dbUser.BadgeId;
         }
       }
       return token;
     },
     async session({ token, session }) {
-      if (token.sub && session.user){
+      if (token.sub && session.user) {
         session.user.id = token.sub;
-        session.user.BadgeId = parseInt(token.BadgeId as string);
+        session.user.badgeId =
+          typeof token.badgeId === "number" ? token.badgeId : undefined;
       }
-      return session
-    }
-
-  }
-}
-)
+      return session;
+    },
+  },
+});

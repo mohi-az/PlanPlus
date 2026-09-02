@@ -85,44 +85,50 @@ model Tasks {
   id          String      @id @default(cuid())
   title       String
   description String?
-  status      String
+  status      TaskStatus  @default(Todo)
   dueDate     DateTime?
   createdAt   DateTime    @default(now())
-  updatedAt   DateTime?
+  updatedAt   DateTime    @updatedAt
   completeAt  DateTime?
-  user        User        @relation(fields: [userId], references: [id])
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   priority    String?
   reminder    Reminders?
   note        TaskNote?
-  category    Categories? @relation(fields: [categoryId], references: [id])
+  category    Categories? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   categoryId  String?
   isAchieved  Boolean     @default(false)
+
+  @@index([userId, status])
+  @@index([userId, dueDate])
+  @@index([categoryId])
 }
 
 model Categories {
-  id          String   @id @unique @default(cuid())
+  id          String   @id @default(cuid())
   userId      String
   name        String
   description String?
   icon        String?
   showInMenu  Boolean  @default(false)
   createdAt   DateTime @default(now())
-  User        User     @relation(fields: [userId], references: [id])
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   Tasks       Tasks[]
+
+  @@index([userId])
 }
 
 model Reminders {
   id       String   @id @default(cuid())
   remindAt DateTime
-  isSent   Boolean
+  isSent   Boolean  @default(false)
   task     Tasks    @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId   String   @unique
 }
 
 model Achievements {
   id               String             @id @default(cuid())
-  name             String
+  name             String             @unique
   description      String
   points           Int
   badgeImageUrl    String
@@ -135,8 +141,11 @@ model UserAchievements {
   userId        String
   achievementId String
   completeAt    DateTime
-  user          User         @relation(fields: [userId], references: [id])
-  achievement   Achievements @relation(fields: [achievementId], references: [id])
+  awardKey      String?      @unique
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievements @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@index([userId, achievementId])
 }
 
 model TaskNote {
@@ -157,18 +166,26 @@ model Logs {
 
 model Badges {
   id             Int    @id @default(autoincrement())
-  badgeTitle     String
-  pointsRequired Int
+  badgeTitle     String @unique
+  pointsRequired Int    @unique
   badgeIconURL   String
 }
 
 model Notifications {
-  id          String      @id @default(uuid())
+  id          String   @id @default(uuid())
   userId      String
   title       String
   description String
   isRead      Boolean  @default(false)
   createdAt   DateTime @default(now())
   type        String   @default("system")
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+enum TaskStatus {
+  Todo
+  Done
+  Cancel
 }

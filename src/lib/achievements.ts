@@ -1,281 +1,282 @@
-"use server"
-import { AddUserNotifications, GetUserAchievements } from "@/app/actions/systemAction";
+"use server";
+
 import { auth } from "@/auth";
 import { prisma } from "@/prisma";
-import { Achievements, Badges } from "@prisma/client";
+import { TaskStatus } from "@/types/enums";
+import type {
+  AchievementDetails,
+  CalculateAchievementsResult,
+} from "@/types/domain";
 
-export async function calculateAchievements(): Promise<calculateAchievementsResponse | void> {
-    const Session = await auth();
-    if (!Session?.user?.id) return;
-    const currentUser = await prisma.user.findUnique({ where: { id: Session.user.id } })
-    if (!currentUser) return
-    const newachievement: Achievements[] = [];
-    let newBalge: Badges | null = null;
-    const completedTasks = await prisma.tasks.findMany({
-        where: {
-            userId: currentUser.id,
-            status: "Done",
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
+export async function calculateAchievements(): Promise<CalculateAchievementsResult | void> {
+  const session = await auth();
+  if (!session?.user?.id) return;
+
+  return prisma.$transaction(async (transaction) => {
+    const user = await transaction.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, BadgeId: true },
+    });
+    if (!user) return;
+
+    const streakStart = startOfDay(new Date(Date.now() - 30 * DAY_IN_MS));
+    const [completedTasks, recentTasks, achievements, existingAwards, badges] =
+      await Promise.all([
+        transaction.tasks.findMany({
+          where: {
+            userId: user.id,
+            status: TaskStatus.Done,
             completeAt: { not: null },
-        },
-    });
-    const userAchievement = await prisma.userAchievements.findMany({ where: { userId: currentUser.id } });
-    const completedTaskCount = completedTasks.length;
-    const achievementsToCheck = [
-        {
-            key: "Task Starter",
-            condition: () => completedTaskCount === 1
-        },
-        {
-            key: "Daily Dedication",
-            condition: async () => await calculateStreak(currentUser.id, 7, true),
-        },
-        {
-            key: "Weekend Warrior",
-            condition: async () => await checkWeekendStreak(currentUser.id)
-        },
-        {
-            key: "Consistent Contributor",
-            condition: () => completedTaskCount === 50,
-        },
-        {
-            key: "Task Master",
-            condition: () => completedTaskCount === 100,
-        },
-        {
-            key: "Streak Keeper",
-            condition: async () => await calculateStreak(currentUser.id, 10)
-        },
-        {
-            key: "Goal Setter",
-            condition: () => completedTasks.filter(t => t.dueDate).length >= 10,
-        },
-        {
-            key: "Night Owl",
-            condition: () =>
-                completedTasks.filter(t => t.completeAt && isWithinTimeRange(t.completeAt, 20, 23)).length >= 5
-        },
-        {
-            key: "Productivity Guru",
-            condition: async () => await calculateUserPoints(currentUser.id) >= 500
-        },
-        {
-            key: "Early Bird",
-            condition: () =>
-                completedTasks.filter(
-                    t => t.completeAt && isWithinTimeRange(t.completeAt, 5, 8)
-                ).length >= 5
-        },
-        {
-            key: "Quick Finisher",
-            condition: () =>
-                completedTasks.some(t => t.completeAt &&
-                    t.createdAt && (new Date(t.completeAt).getTime() - new Date(t.createdAt).getTime()) / 3600000 <= 1
-                )
-        },
-        {
-            key: "Perfect Streak",
-            condition: async () =>
-                userAchievement.filter(t => t.achievementId === "12").length === 0 && await calculateStreak(currentUser.id, 30)
-        },
-        {
-            key: "Weekend Finisher",
-            condition: () =>
-                completedTasks.filter(t => t.completeAt && isWeekend(new Date(t.completeAt))).length >= 10
-        },
-        {
-            key: "Long-Term Planner",
-            condition: () => completedTasks.filter(t => t.status === "Done" &&
-                ((t.completeAt != null && t.createdAt) && ((t.completeAt.getTime() - t.createdAt.getTime()) / (1000 * 60 * 60 * 24)) >= 30)).length === 1,
-        },
-        {
-            key: "Five Tasks",
-            condition: () => completedTaskCount === 5
-        },
-        {
-            key: "Deadline Crusher",
-            condition: () => completedTasks.filter(t => (t.completeAt && t.dueDate) && (t.completeAt < t.dueDate)).length >= 20,
-        },
-        {
-            key: "Milestone Maker",
-            condition: async () => await calculateUserPoints(currentUser.id) >= 1000
-        },
-        {
-            key: "Creative Problem Solver",
-            condition: () => completedTasks.filter(t => t.priority === 'High' && t.status === "Done").length === 5,
-        },
-        {
-            key: "Daily Finisher",
-            condition: () => true // Get a point for every tasks
-        }
+          },
+          orderBy: { completeAt: "asc" },
+        }),
+        transaction.tasks.findMany({
+          where: {
+            userId: user.id,
+            OR: [
+              { createdAt: { gte: streakStart } },
+              { completeAt: { gte: streakStart } },
+            ],
+          },
+          select: { id: true, createdAt: true, completeAt: true },
+        }),
+        transaction.achievements.findMany(),
+        transaction.userAchievements.findMany({ where: { userId: user.id } }),
+        transaction.badges.findMany({ orderBy: { pointsRequired: "asc" } }),
+      ]);
 
-    ];
+    const achievementByName = new Map(
+      achievements.map((achievement) => [achievement.name, achievement]),
+    );
+    const awardCountByAchievement = new Map<string, number>();
+    for (const award of existingAwards) {
+      awardCountByAchievement.set(
+        award.achievementId,
+        (awardCountByAchievement.get(award.achievementId) ?? 0) + 1,
+      );
+    }
 
-    // Check and award achievements
-    for (const achievement of achievementsToCheck) {
-        const selectedAchievement = await prisma.achievements.findFirst({ where: { name: achievement.key } })
-        if (!selectedAchievement) return
-        const existing = await prisma.userAchievements.findFirst({
-            where: { userId: currentUser.id, achievementId: selectedAchievement.id },
+    let totalPoints = existingAwards.reduce(
+      (total, award) =>
+        total +
+        (achievements.find((item) => item.id === award.achievementId)?.points ??
+          0),
+      0,
+    );
+    const newlyAwarded: AchievementDetails[] = [];
+
+    const award = async (
+      name: string,
+      condition: boolean,
+      repeatableTaskIds?: string[],
+    ) => {
+      const achievement = achievementByName.get(name);
+      if (!achievement || !condition) return;
+
+      const existingCount = awardCountByAchievement.get(achievement.id) ?? 0;
+      const awardKeys = achievement.isRepeatable
+        ? (repeatableTaskIds ?? [])
+            .slice(existingCount)
+            .map((taskId) => `${user.id}:${achievement.id}:${taskId}`)
+        : existingCount === 0
+          ? [`${user.id}:${achievement.id}`]
+          : [];
+      if (awardKeys.length === 0) return;
+
+      const result = await transaction.userAchievements.createMany({
+        data: awardKeys.map((awardKey) => ({
+          userId: user.id,
+          achievementId: achievement.id,
+          awardKey,
+          completeAt: new Date(),
+        })),
+        skipDuplicates: true,
+      });
+      if (result.count === 0) return;
+
+      awardCountByAchievement.set(achievement.id, existingCount + result.count);
+      totalPoints += achievement.points * result.count;
+      newlyAwarded.push(achievement);
+
+      if (existingCount === 0) {
+        await transaction.notifications.create({
+          data: {
+            userId: user.id,
+            title: "Achievement unlocked!",
+            description: `Congratulations! You unlocked '${achievement.name}' and earned ${achievement.points} points.`,
+            type: "achievement",
+          },
         });
-        if (!existing || selectedAchievement.isRepeatable) {
-            if (await achievement.condition()) {
-                newachievement.push(selectedAchievement); // Provide Data for result
-                await prisma.userAchievements.create({
-                    data: {
-                        userId: currentUser.id,
-                        achievementId: selectedAchievement?.id,
-                        completeAt: new Date(),
-                    },
-                });
-                if (!existing)
-                    await AddUserNotifications(`Congratulations! You unlocked the '${selectedAchievement.name}' achievement! You've earned '${selectedAchievement.points}' points. Keep going to upgrade your badge!`,
-                        "Achievement Unlocked!",
-                        "achievement"
-                    )
-            }
+      }
+    };
 
-        }
-    }
-    //Update user badge
-    const badges = await prisma.badges.findMany();
-    const response = await GetUserAchievements();
-    if (response.status === "success") {
-        const totalPoints = response.data
-            .filter(items => items.completeAt != null)
-            .map(items => items.achievements.points)
-            .reduce((prevVal: number, nextVal: number) => prevVal + nextVal, 0)
-        const newBadge = badges.findLast(badge => totalPoints >= badge.pointsRequired);
-        if (currentUser.BadgeId != newBadge?.id) {
-            await prisma.user.update({
-                where: {
-                    id: Session.user.id
-                },
-                data: {
-                    BadgeId: newBadge?.id
-                }
-            }
-            )
-            newBalge = newBadge ? newBadge : null;
-            await AddUserNotifications(`Amazing! You’ve earned the '${newBadge?.badgeTitle}' achievement for earning ${newBadge?.pointsRequired} points!`,
-                `Badge Earned:${newBadge?.badgeTitle}`,
-                "badge"
-            )
-        }
-    }
-    return { Achievement: newachievement, badge: newBalge }
-}
+    const completedTaskIds = completedTasks.map((task) => task.id);
+    await award(
+      "Daily Finisher",
+      completedTaskIds.length > 0,
+      completedTaskIds,
+    );
+    await award("Task Starter", completedTasks.length >= 1);
+    await award("Five Tasks", completedTasks.length >= 5);
+    await award("Consistent Contributor", completedTasks.length >= 50);
+    await award("Task Master", completedTasks.length >= 100);
+    await award(
+      "Daily Dedication",
+      hasConsecutiveActivity(recentTasks, 7, "createdAt"),
+    );
+    await award(
+      "Streak Keeper",
+      hasConsecutiveActivity(recentTasks, 10, "completeAt"),
+    );
+    await award(
+      "Perfect Streak",
+      hasConsecutiveActivity(recentTasks, 30, "completeAt"),
+    );
+    await award("Weekend Warrior", completedOnPreviousWeekend(completedTasks));
+    await award(
+      "Weekend Finisher",
+      completedTasks.filter(
+        (task) => task.completeAt && isWeekend(task.completeAt),
+      ).length >= 10,
+    );
+    await award(
+      "Goal Setter",
+      completedTasks.filter((task) => task.dueDate).length >= 10,
+    );
+    await award(
+      "Night Owl",
+      completedTasks.filter(
+        (task) => task.completeAt && isWithinTimeRange(task.completeAt, 20, 23),
+      ).length >= 5,
+    );
+    await award(
+      "Early Bird",
+      completedTasks.filter(
+        (task) => task.completeAt && isWithinTimeRange(task.completeAt, 5, 8),
+      ).length >= 5,
+    );
+    await award(
+      "Quick Finisher",
+      completedTasks.some((task) => {
+        if (!task.completeAt) return false;
+        const durationHours =
+          (task.completeAt.getTime() - task.createdAt.getTime()) / 3_600_000;
+        return durationHours >= 0 && durationHours <= 1;
+      }),
+    );
+    await award(
+      "Long-Term Planner",
+      completedTasks.some(
+        (task) =>
+          task.completeAt !== null &&
+          (task.completeAt.getTime() - task.createdAt.getTime()) / DAY_IN_MS >=
+            30,
+      ),
+    );
+    await award(
+      "Deadline Crusher",
+      completedTasks.filter(
+        (task) =>
+          task.completeAt && task.dueDate && task.completeAt <= task.dueDate,
+      ).length >= 20,
+    );
+    await award("Productivity Guru", totalPoints >= 500);
+    await award("Milestone Maker", totalPoints >= 1000);
 
-async function checkWeekendStreak(userId: string): Promise<boolean> {
-    const today = new Date();
-    const lastWeekend = getPreviousWeekend(today);
-
-    const saturdayTasks = await prisma.tasks.findMany({
-        where: {
-            userId,
-            isAchieved: false,
-            completeAt: {
-                gte: lastWeekend.saturday,
-                lt: lastWeekend.sunday,
-            },
+    const newBadge =
+      badges.findLast((badge) => totalPoints >= badge.pointsRequired) ?? null;
+    let earnedBadge = null;
+    if (newBadge && newBadge.id !== user.BadgeId) {
+      await transaction.user.update({
+        where: { id: user.id },
+        data: { BadgeId: newBadge.id },
+      });
+      await transaction.notifications.create({
+        data: {
+          userId: user.id,
+          title: `Badge earned: ${newBadge.badgeTitle}`,
+          description: `You earned the '${newBadge.badgeTitle}' badge after reaching ${newBadge.pointsRequired} points.`,
+          type: "badge",
         },
-    });
-    const sundayEnd = new Date(lastWeekend.sunday);
-    sundayEnd.setDate(sundayEnd.getDate() + 1); // Correctly advances to the next day
-    sundayEnd.setHours(0, 0, 0, 0); // Reset time to the start of the next day
-
-    const sundayTasks = await prisma.tasks.findMany({
-        where: {
-            userId,
-            isAchieved: false,
-            completeAt: {
-                gte: lastWeekend.sunday,
-                lt: sundayEnd, // Proper Date object instead of a timestamp
-            },
-        },
-    });
-
-    const result = saturdayTasks.length > 0 && sundayTasks.length > 0;
-    // if(result)
-    //     SelectedTasks = [...saturdayTasks,...saturdayTasks];
-    return result
-
-}
-async function calculateStreak(userId: string, days: number, CheckforCreateTask: boolean = false): Promise<boolean> {
-    const today = new Date();
-    let streakCount = 0;
-
-    for (let i = 0; i < days; i++) {
-        const dayToCheck = new Date();
-        dayToCheck.setDate(today.getDate() - i);
-
-        const tasksCompleted = await prisma.tasks.findMany({
-            where:
-            {
-                userId,
-                isAchieved: false,
-                OR:
-                    CheckforCreateTask ?
-                        [
-                            {
-                                status: "Todo",
-                                createdAt: {
-                                    gte: new Date(dayToCheck.setHours(0, 0, 0, 0)),
-                                    lt: new Date(dayToCheck.setHours(23, 59, 59, 999)),
-                                }
-                            }]
-                        : [
-                            {
-                                status: "Done",
-                                completeAt: {
-                                    gte: new Date(dayToCheck.setHours(0, 0, 0, 0)),
-                                    lt: new Date(dayToCheck.setHours(23, 59, 59, 999)),
-                                }
-                            },
-                            {
-                                status: "Todo",
-                                createdAt: {
-                                    gte: new Date(dayToCheck.setHours(0, 0, 0, 0)),
-                                    lt: new Date(dayToCheck.setHours(23, 59, 59, 999)),
-                                }
-                            }
-                        ]
-            }
-        })
-
-        if (tasksCompleted.length > 0) {
-            // SelectedTasks =tasksCompleted;
-            streakCount++
-        }
-        else break;
+      });
+      earnedBadge = newBadge;
     }
 
-    return streakCount >= days;
+    return { achievements: newlyAwarded, badge: earnedBadge };
+  });
 }
 
-async function calculateUserPoints(userId: string): Promise<number> {
-    const userAchievements = await prisma.userAchievements.findMany({
-        where: { userId },
-        include: { achievement: true }, // Include related achievement data
-    });
+function hasConsecutiveActivity(
+  tasks: Array<{ createdAt: Date; completeAt: Date | null }>,
+  days: number,
+  field: "createdAt" | "completeAt",
+): boolean {
+  const activeDays = new Set(
+    tasks.flatMap((task) => {
+      const date = task[field];
+      return date ? [dateKey(date)] : [];
+    }),
+  );
 
-    return userAchievements.reduce((total, ua) => total + ua.achievement.points, 0);
+  const today = startOfDay(new Date());
+  for (let offset = 0; offset < days; offset += 1) {
+    if (
+      !activeDays.has(dateKey(new Date(today.getTime() - offset * DAY_IN_MS)))
+    )
+      return false;
+  }
+  return true;
 }
 
-function isWithinTimeRange(date: Date, startHour: number, endHour: number): boolean {
-    const hour = date.getHours();
-    return hour >= startHour && hour < endHour;
+function completedOnPreviousWeekend(
+  tasks: Array<{ completeAt: Date | null }>,
+): boolean {
+  const { saturday, monday } = previousWeekendRange(new Date());
+  let completedOnSaturday = false;
+  let completedOnSunday = false;
+
+  for (const task of tasks) {
+    if (
+      !task.completeAt ||
+      task.completeAt < saturday ||
+      task.completeAt >= monday
+    )
+      continue;
+    if (task.completeAt.getDay() === 6) completedOnSaturday = true;
+    if (task.completeAt.getDay() === 0) completedOnSunday = true;
+  }
+  return completedOnSaturday && completedOnSunday;
 }
-function getPreviousWeekend(today: Date) {
-    const saturday = new Date(today);
-    const sunday = new Date(today);
 
-    saturday.setDate(today.getDate() - ((today.getDay() + 1) % 7));
-    sunday.setDate(saturday.getDate() + 1);
+function previousWeekendRange(today: Date) {
+  const saturday = startOfDay(today);
+  saturday.setDate(today.getDate() - ((today.getDay() + 1) % 7));
+  const monday = new Date(saturday);
+  monday.setDate(saturday.getDate() + 2);
+  return { saturday, monday };
+}
 
-    return { saturday, sunday };
+function startOfDay(date: Date) {
+  const result = new Date(date);
+  result.setHours(0, 0, 0, 0);
+  return result;
+}
+
+function dateKey(date: Date) {
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+function isWithinTimeRange(
+  date: Date,
+  startHour: number,
+  endHour: number,
+): boolean {
+  const hour = date.getHours();
+  return hour >= startHour && hour < endHour;
 }
 
 function isWeekend(date: Date): boolean {
-    const day = date.getDay();
-    return day === 6 || day === 0;
+  return date.getDay() === 6 || date.getDay() === 0;
 }

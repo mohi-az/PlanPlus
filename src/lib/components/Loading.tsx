@@ -1,10 +1,13 @@
-"use client"
-import React from 'react'
-import LottieAnimation from './Lottie'
-import loading from '@/assets/lotties/plus-loader.json'
+"use client";
+import React from "react";
+import LottieAnimation from "./Lottie";
+import loading from "@/assets/lotties/plus-loader.json";
 
 export default function Loading() {
   return (
-    <div   data-testid="LoadingComponent"> <LottieAnimation animationData={loading} loop={true} className='w-24'/></div>
-  )
+    <div data-testid="LoadingComponent">
+      {" "}
+      <LottieAnimation animationData={loading} loop={true} className="w-24" />
+    </div>
+  );
 }

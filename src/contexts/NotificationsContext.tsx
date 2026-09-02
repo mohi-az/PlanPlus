@@ -1,47 +1,83 @@
-"use client"
-import { AddLog, AddUserNotifications, ChangeUserNotificationStatus, GetUserNotifications } from '@/app/actions/systemAction'
-import { Notifications } from '@prisma/client'
-import { usePathname } from 'next/navigation'
-import React, { createContext, useEffect, useState } from 'react'
-type NotificationType = {
-    notifications: Notifications[],
-    getNotifications: () => Promise<void>
-    AddNotifications: (description: string, title: string, type: string) => Promise<void>
-    ChangeStatus: () => void
-}
+"use client";
 
-const NotificationInitialValues: NotificationType = { notifications: [], getNotifications: async () => { }, AddNotifications: async () => { }, ChangeStatus: () => { } }
+import {
+  addUserNotification,
+  getUserNotifications,
+  markUserNotificationsAsRead,
+} from "@/app/actions/systemAction";
+import type { NotificationItem } from "@/types/domain";
+import React, { createContext, useCallback, useEffect, useState } from "react";
 
-export const NotificationContext = createContext(NotificationInitialValues);
-export const NotificationProvider = ({ children }: { children: React.ReactElement }) => {
-    const path=usePathname();
-    const [notifications, setNotifications] = useState<Notifications[]>([]);
+type NotificationContextType = {
+  notifications: NotificationItem[];
+  refreshNotifications: () => Promise<void>;
+  addNotification: (
+    description: string,
+    title: string,
+    type: string,
+  ) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
+};
 
-    const getNotifications = async () => {
-        const response = await GetUserNotifications();
-        if (response.status === "success")
-            setNotifications([...response.data]);
+const initialValues: NotificationContextType = {
+  notifications: [],
+  refreshNotifications: async () => undefined,
+  addNotification: async () => undefined,
+  markAllAsRead: async () => undefined,
+};
+
+export const NotificationContext =
+  createContext<NotificationContextType>(initialValues);
+
+export const NotificationProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+
+  const refreshNotifications = useCallback(async () => {
+    try {
+      const response = await getUserNotifications();
+      if (response.status === "success") setNotifications(response.data);
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
     }
-    const AddNotifications = async (description: string, title: string, type: string) => {
-        const response = await AddUserNotifications(description, title, type);
-        if (response.status === "success") getNotifications();
-    }
-    const ChangeStatus = async () => {
-        const response = await ChangeUserNotificationStatus();
-        if (response.error) {
-            await AddLog({ type: "Error", url:path,detail:"Error on changing notifications status"})
-        }
-        else{
-           await  getNotifications();
-        }
-    }
-    useEffect(() => {
-        getNotifications();
-    }, [])
+  }, []);
 
-    return (
-        <NotificationContext.Provider value={{ notifications, AddNotifications, getNotifications, ChangeStatus }}>
-            {children}
-        </NotificationContext.Provider>
-    )
-}
+  const addNotification = useCallback(
+    async (description: string, title: string, type: string) => {
+      const response = await addUserNotification(description, title, type);
+      if (response.status === "success") {
+        setNotifications((current) => [response.data, ...current]);
+      }
+    },
+    [],
+  );
+
+  const markAllAsRead = useCallback(async () => {
+    const response = await markUserNotificationsAsRead();
+    if (response.status === "success") {
+      setNotifications((current) =>
+        current.map((notification) => ({ ...notification, isRead: true })),
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshNotifications();
+  }, [refreshNotifications]);
+
+  return (
+    <NotificationContext.Provider
+      value={{
+        notifications,
+        refreshNotifications,
+        addNotification,
+        markAllAsRead,
+      }}
+    >
+      {children}
+    </NotificationContext.Provider>
+  );
+};

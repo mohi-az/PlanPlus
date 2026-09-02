@@ -1,76 +1,141 @@
-"use client"
-import { GetUserAchievements, GetAllBadge, GetUserBadge } from "@/app/actions/systemAction";
+"use client";
+
+import {
+  getAllBadges,
+  getUserAchievements,
+  getUserBadge,
+} from "@/app/actions/systemAction";
 import { calculateAchievements } from "@/lib/achievements";
-import { Badges } from "@prisma/client";
-import { createContext, useEffect, useState } from "react"
-type AchievementsType = {
-    userAchievements: UserAchievementsType[],
-    userBadge: {
-        current: Badges,
-        next: Badges,
-        last: Badges,
-    } | null,
-    currentRank: number,
-    nextRank: number,
-    isPending: boolean,
-    updateAchievements: () => Promise<void>,
-}
-const InitialValue: AchievementsType = { userBadge: null, currentRank: 0, nextRank: 0, userAchievements: [], isPending: false, updateAchievements: async () => { } }
-export const AchievementsContext = createContext(InitialValue);
-export const AchievementsProvider = ({ children }: { children: React.ReactNode }) => {
-    const [userBadge, setUserBadge] = useState<{ current: Badges; next: Badges; last: Badges; } | null>(null);
-    const [userAchievements, setUserAchievements] = useState<UserAchievementsType[]>([]);
-    const [isPending, setIsPending] = useState(false);
-    const [currentRank, setCurrentRank] = useState<number>(0);
-    const [nextRank, setNextRank] = useState<number>(0);
-    const Badge = async () => {
-        const userBadge = await GetUserBadge();
-        const AllBadge = await GetAllBadge();
-        if (AllBadge.status === "success" && userBadge.status === "success") {
-            const nextBadge = AllBadge.data.find(badge => badge.id === userBadge.data.id + 1) || { id: 0, badgeTitle: '', pointsRequired: 0, badgeIconURL: '' };
-            const lastBadge = AllBadge.data.pop() || { id: 0, badgeTitle: '', pointsRequired: 0, badgeIconURL: '' };
-            setUserBadge({ current: userBadge.data, next: nextBadge, last: lastBadge })
-            setNextRank(nextBadge.pointsRequired);
-        }
-    }
-    const Achievements = async () => {
-        try {
-            setIsPending(true);
-            const response = await GetUserAchievements();
-            if (response.status === "success") {
-                setUserAchievements(response.data)
-                setCurrentRank(response.data
-                    .filter(items => items.completeAt != null)
-                    .map(items => items.achievements.points * items.count)
-                    .reduce((prevVal: number, nextVal: number) => prevVal + nextVal, 0));
-            }
-            setIsPending(false);
+import type { BadgeDetails, UserAchievement } from "@/types/domain";
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { toast } from "react-toastify";
 
-        } catch (error) {
-            setIsPending(false);
-            console.error("Failed to fetch user achievements:", error);
-        }
+type BadgeProgress = {
+  current: BadgeDetails;
+  next: BadgeDetails;
+  last: BadgeDetails;
+};
 
+type AchievementsContextType = {
+  userAchievements: UserAchievement[];
+  userBadge: BadgeProgress | null;
+  currentRank: number;
+  nextRank: number;
+  isPending: boolean;
+  updateAchievements: () => Promise<void>;
+};
+
+const initialValue: AchievementsContextType = {
+  userBadge: null,
+  currentRank: 0,
+  nextRank: 0,
+  userAchievements: [],
+  isPending: false,
+  updateAchievements: async () => undefined,
+};
+
+export const AchievementsContext =
+  createContext<AchievementsContextType>(initialValue);
+
+export const AchievementsProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const [userBadge, setUserBadge] = useState<BadgeProgress | null>(null);
+  const [userAchievements, setUserAchievements] = useState<UserAchievement[]>(
+    [],
+  );
+  const [isPending, setIsPending] = useState(false);
+
+  const refreshAchievements = useCallback(async () => {
+    setIsPending(true);
+    try {
+      const [achievementsResult, userBadgeResult, badgesResult] =
+        await Promise.all([
+          getUserAchievements(),
+          getUserBadge(),
+          getAllBadges(),
+        ]);
+
+      if (achievementsResult.status === "success") {
+        setUserAchievements(achievementsResult.data);
+      }
+
+      if (
+        userBadgeResult.status === "success" &&
+        badgesResult.status === "success"
+      ) {
+        const badges = badgesResult.data;
+        const currentIndex = badges.findIndex(
+          (badge) => badge.id === userBadgeResult.data.id,
+        );
+        const lastBadge = badges.at(-1) ?? userBadgeResult.data;
+        const nextBadge =
+          currentIndex >= 0
+            ? (badges[currentIndex + 1] ?? lastBadge)
+            : (badges.find(
+                (badge) =>
+                  badge.pointsRequired > userBadgeResult.data.pointsRequired,
+              ) ?? lastBadge);
+
+        setUserBadge({
+          current: userBadgeResult.data,
+          next: nextBadge,
+          last: lastBadge,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch achievement data:", error);
+    } finally {
+      setIsPending(false);
     }
-    const updateAchievements = async () => {
-        try {
-            const response = await calculateAchievements();
-            if (response && (response.badge || response.Achievement)) {
-                Badge();
-                Achievements();
-            }
-        }
-        catch (error) {
-            console.log(error)
-        }
+  }, []);
+
+  const updateAchievements = useCallback(async () => {
+    try {
+      const result = await calculateAchievements();
+      if (result && (result.badge || result.achievements.length > 0)) {
+        await refreshAchievements();
+      }
+    } catch (error) {
+      console.error("Failed to update achievements:", error);
+      toast.error("Something went wrong!");
     }
-    useEffect(() => {
-        Badge();
-        Achievements();
-    }, [])
-    return (
-        <AchievementsContext.Provider value={{ userBadge, userAchievements, currentRank, nextRank, isPending, updateAchievements }}>
-            {children}
-        </AchievementsContext.Provider>
-    )
-}
+  }, [refreshAchievements]);
+
+  useEffect(() => {
+    void refreshAchievements();
+  }, [refreshAchievements]);
+
+  const currentRank = useMemo(
+    () =>
+      userAchievements.reduce(
+        (total, item) => total + item.achievements.points * item.count,
+        0,
+      ),
+    [userAchievements],
+  );
+  const nextRank = userBadge?.next.pointsRequired ?? 0;
+
+  return (
+    <AchievementsContext.Provider
+      value={{
+        userBadge,
+        userAchievements,
+        currentRank,
+        nextRank,
+        isPending,
+        updateAchievements,
+      }}
+    >
+      {children}
+    </AchievementsContext.Provider>
+  );
+};

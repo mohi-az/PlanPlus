@@ -1,67 +1,89 @@
-# PlanPlus 📝🚀
+# PlanPlus
 
-Hey there! 👋 Welcome to **PlanPlus**, a gamified to-do list app designed to make your daily tasks a little more fun and engaging. This project combines functionality with a bit of flair, aiming to enhance productivity while keeping users motivated through rewards and achievements.
-Live demo : https://plan-plus.vercel.app/
+PlanPlus is a gamified task manager built with Next.js, React, PostgreSQL, and Prisma. It combines everyday task management with achievements, points, badges, reminders, notes, and productivity reports.
 
----
+[Live demo](https://plan-plus.vercel.app/)
 
-## 🌟 Features
-- **Task Management**:  
-  Organize tasks by categories, set due dates, and prioritize them for better workflow management.
+## Features
 
-- **Gamification**:  
-  Make task completion rewarding with points and achievement badges. The more you complete, the more you unlock!
+- Create, update, filter, categorize, complete, and delete tasks.
+- Add due dates, reminders, and completion notes.
+- Unlock repeatable and one-time achievements.
+- Progress through badges based on earned points.
+- Review task metrics and a six-month completion report.
+- Sign in with credentials or GitHub.
 
-- **Achievements**:  
-  Celebrate your productivity milestones by earning badges. From completing your first task to hitting major goals, there’s always something to aim for. 🏅
+## Tech stack
 
-- **Statistics**:  
-  Get detailed insights into your productivity trends. Track your progress over time with intuitive visualizations that help you stay on top of your game.
+- Next.js 15 and React 19
+- TypeScript
+- PostgreSQL and Prisma ORM
+- NextAuth.js
+- Zod
+- Tailwind CSS and DaisyUI
+- Jest and Testing Library
 
-- **Clean and Intuitive UI**:  
-  Designed with simplicity and usability in mind, PlanPlus ensures a seamless user experience across devices. Responsive, fast, and aesthetically pleasing. 🌈
+## Local development
 
-**Note**: Streak tracking is out! It was fun, but it didn't make the cut. 😉
+Requirements: Node.js 22, npm, and PostgreSQL.
 
----
+1. Copy `.env.example` to `.env.development` and set the development values. Use a separate `.env.production` for production commands.
+2. Install dependencies:
 
-## 🚧 Work in Progress
-⚠️ **Heads up**: This project is still in development! Some features might be incomplete, and new updates are on the way. Feel free to check back later for improvements and more functionality.
+   ```bash
+   npm ci
+   ```
 
----
+3. Apply database migrations and seed reference data:
 
-## 🛠️ Tech Stack
-- **Frameworks & Libraries**:  
-  Built with **Next.js 15** and **React 19**.  
-  Both **Server-Side Rendering (SSR)** and **Client-Side Rendering (CSR)** are used to optimize performance and SEO.
+   ```bash
+   npm run db:migrate
+   npm run db:seed
+   ```
 
-- **Styling**:  
-  Styled with **Tailwind CSS** and **DaisyUI** to deliver a modern, responsive design that looks great on any screen size.
+4. Start the development server:
 
-- **TypeScript**:  
-  Ensures type safety and scalability, making the codebase more robust and easier to maintain.
+   ```bash
+   npm run dev
+   ```
 
-- **Data Validation**:  
-  **Zod** is used to handle data validation effortlessly, ensuring that only clean and correct data gets through.
-
-- **Database**:  
-  **PostgreSQL** is the backbone for data storage, managed through **Prisma ORM** for seamless database operations.
-
----
-
-## 🧑‍💻 Why I Built This
-PlanPlus is more than just a to-do list app. It’s a personal project that showcases my skills in modern web development. Here's why it stands out:
-
-- Clean and maintainable React/Next.js components for both SSR and CSR.
-- A sleek and intuitive user interface styled with Tailwind CSS and DaisyUI.
-- Strong emphasis on type safety and data validation using TypeScript and Zod.
-- A robust backend powered by PostgreSQL and Prisma for seamless database management.
-- This project reflects my coding philosophy: simplicity, scalability, and a focus on user experience.
-
----
-Thanks for stopping by! If you like what you see, feel free to connect or drop a star ⭐️ on the repo.
-Happy coding! 💻🚀
+## Quality checks
 
 ```bash
-This version adds more personality and provides a detailed overview of your project’s purpose and features. Let me know if you’d like any changes!
+npm run lint
+npm run typecheck
+npm test
+npm run build
 ```
+
+CI runs the same checks for every push and pull request targeting `main`.
+
+### Existing database
+
+The first migration is a baseline of the schema that existed before migration history was added. If an existing PlanPlus database already has that schema, back it up, mark only the baseline as applied, and then deploy the hardening migration:
+
+```bash
+npm run db:baseline:production
+npm run db:migrate:deploy
+npm run db:seed:production
+```
+
+Fresh production databases should run `npm run db:migrate:deploy`. Development uses `npm run db:migrate`.
+
+## Docker
+
+The production image uses a multi-stage build and runs the Next.js standalone server as a non-root user.
+
+```bash
+docker build -t planplus .
+docker run --env-file .env -p 8080:8080 planplus
+```
+
+## Project structure
+
+- `src/app`: routes, pages, and server actions
+- `src/contexts`: client-side domain state
+- `src/lib`: shared components, schemas, and server-side domain logic
+- `src/types`: explicit shared application types
+- `prisma`: database schema, migrations, and seed data
+- `__tests__`: component and server-action tests
